@@ -132,7 +132,7 @@ function App() {
 
       const history = [];
       data.scenes.forEach(scene => {
-        const imageUrl = scene.reference_image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${scene.reference_image}` : null;
+        const imageUrl = scene.reference_image ? `${scene.reference_image?.startsWith('http') ? scene.reference_image : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + scene.reference_image}` : null;
         history.push({ role: 'user', content: scene.prompt, image: imageUrl });
 
         if (scene.text_response) {
@@ -252,7 +252,7 @@ function App() {
 
         const history = [];
         data.scenes.forEach(scene => {
-          const imageUrl = scene.reference_image ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${scene.reference_image}` : null;
+          const imageUrl = scene.reference_image ? `${scene.reference_image?.startsWith('http') ? scene.reference_image : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + scene.reference_image}` : null;
           history.push({ role: 'user', content: scene.prompt, image: imageUrl });
 
           if (scene.text_response) {
@@ -420,7 +420,7 @@ function App() {
                 <h3 className="text-sm font-semibold text-white truncate">{previewStitchedVideo.title}</h3>
                 <div className="flex items-center gap-2">
                   <a
-                    href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${previewStitchedVideo.video_path}`}
+                    href={`${previewStitchedVideo.video_path?.startsWith('http') ? previewStitchedVideo.video_path : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + previewStitchedVideo.video_path}`}
                     download
                     className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors"
                     title="Download"
@@ -438,7 +438,7 @@ function App() {
               {/* Video */}
               <div className="p-4 bg-black">
                 <video
-                  src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${previewStitchedVideo.video_path}`}
+                  src={`${previewStitchedVideo.video_path?.startsWith('http') ? previewStitchedVideo.video_path : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + previewStitchedVideo.video_path}`}
                   controls
                   autoPlay
                   className="w-full rounded-lg"

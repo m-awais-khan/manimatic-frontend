@@ -279,7 +279,7 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                         </button>
                                     </div>
                                     <video
-                                        src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${previewVideo}`}
+                                        src={`${previewVideo?.startsWith('http') ? previewVideo : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + previewVideo}`}
                                         controls
                                         autoPlay
                                         className="w-full rounded-lg border border-slate-800 bg-black"
