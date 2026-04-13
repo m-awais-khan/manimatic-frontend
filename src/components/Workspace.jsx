@@ -35,7 +35,7 @@ const SceneContainer = ({ scene, isLatest }) => {
                     </div>
                     {scene.reference_image && (
                         <img
-                            src={`http://localhost:8000${scene.reference_image}`}
+                            src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${scene.reference_image}`}
                             alt="Reference"
                             className="w-10 h-10 rounded-lg object-cover border border-slate-700/50 shrink-0"
                         />
@@ -62,7 +62,7 @@ const SceneContainer = ({ scene, isLatest }) => {
                                 <div className="bg-slate-800/40 rounded-xl border border-slate-700/30 p-3">
                                     <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider mb-2 block">Reference Image</span>
                                     <img
-                                        src={`http://localhost:8000${scene.reference_image}`}
+                                        src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${scene.reference_image}`}
                                         alt="Reference"
                                         className="rounded-lg max-h-40 w-auto object-contain border border-slate-700/50"
                                     />

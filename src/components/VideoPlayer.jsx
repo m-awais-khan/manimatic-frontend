@@ -11,7 +11,7 @@ const VideoPlayer = ({ mainVideoUrl }) => {
             <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-inner border border-slate-700 flex items-center justify-center relative group">
                 {mainVideoUrl ? (
                     <video
-                        src={`http://localhost:8000${mainVideoUrl}`}
+                        src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${mainVideoUrl}`}
                         controls
                         autoPlay
                         className="w-full h-full object-contain"
