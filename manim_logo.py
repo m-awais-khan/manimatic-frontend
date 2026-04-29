@@ -69,13 +69,7 @@ class ManimaticLogo(Scene):
             rate_func=rate_functions.ease_in_out_cubic
         )
         
-        # 5. Final polish: a subtle pulse to indicate locking into place
-        self.play(
-            ma_logo.animate.set_stroke(width=thickness + 10),
-            run_time=0.4,
-            rate_func=there_and_back
-        )
-        self.wait(1.5)
+        self.wait(0.5)
         
         # 6. Smooth reverse to create a perfect loop
         text_loop = Text("MANIMATIC", font="sans-serif", weight=BOLD, font_size=72)
