@@ -3,7 +3,34 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, ChevronDown, ChevronRight, Play, Film, ArrowUp, ArrowDown, Scissors } from 'lucide-react';
 import { fetchChats, fetchChatDetails, createStitch, fetchStitchedVideos } from '../api/client';
 import Logo from './Logo';
-import VideoPlayer from './VideoPlayer';
+
+const BlobVideo = ({ url, className, style }) => {
+    const [blobSrc, setBlobSrc] = useState(null);
+    useEffect(() => {
+        let isMounted = true;
+        let blobUrl = null;
+        if (!url) { setBlobSrc(null); return; }
+        const fullUrl = url.startsWith('http') ? url : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + url;
+        fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': '69420' }})
+            .then(res => res.blob())
+            .then(blob => {
+                if (isMounted) {
+                    blobUrl = URL.createObjectURL(blob);
+                    setBlobSrc(blobUrl);
+                }
+            })
+            .catch(() => {
+                if (isMounted) setBlobSrc(fullUrl);
+            });
+        return () => {
+            isMounted = false;
+            if (blobUrl) URL.revokeObjectURL(blobUrl);
+        };
+    }, [url]);
+    
+    if (!blobSrc) return <div className={`animate-pulse bg-[#111111] ${className}`} style={style} />;
+    return <video src={blobSrc} controls autoPlay className={className} style={style} crossOrigin="anonymous" />;
+};
 
 function StitcherModal({ isOpen, onClose, onStitchComplete }) {
     const [chats, setChats] = useState([]);
@@ -279,9 +306,11 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                             <X size={14} />
                                         </button>
                                     </div>
-                                    <div className="w-full rounded-lg overflow-hidden border border-[#333333] bg-black" style={{ maxHeight: '180px' }}>
-                                        <VideoPlayer videoUrl={previewVideo} />
-                                    </div>
+                                    <BlobVideo 
+                                        url={previewVideo} 
+                                        className="w-full rounded-lg border border-[#333333] bg-black" 
+                                        style={{ maxHeight: '180px' }} 
+                                    />
                                 </div>
                             )}
                         </div>
@@ -357,7 +386,7 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                     value={stitchTitle}
                                     onChange={(e) => setStitchTitle(e.target.value)}
                                     placeholder="Stitched video title (optional)"
-                                    className="w-full px-3 py-2 bg-[#111111] border border-[#333333] rounded-lg text-sm text-[#a1a1aa] placeholder-slate-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50"
+                                    className="w-full px-3 py-2 bg-[#111111] border border-[#333333] rounded-lg text-sm text-[#a1a1aa] placeholder-slate-500 focus:outline-none focus:border-[#666666] focus:ring-1 focus:ring-[#666666]"
                                 />
 
                                 {/* Transition Selector */}
