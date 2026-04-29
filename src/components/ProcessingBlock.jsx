@@ -48,6 +48,52 @@ const ProcessingBlock = ({ msg, model, onSceneClick }) => {
     const isProcessing = msg.status !== 'completed' && msg.status !== 'failed';
     const isRendering = msg.status === 'rendering';
 
+    if (msg.status === 'completed') {
+        return (
+            <div className="w-full bg-[#0a0a0a] border border-[#333333] rounded-2xl overflow-hidden shadow-sm my-6 p-4">
+                <div className="flex flex-col md:flex-row gap-6 h-48">
+                    {/* Small Video Preview */}
+                    <div className="w-full md:w-[280px] h-full flex-shrink-0">
+                         {msg.video_path ? <VideoPlayer mainVideoUrl={msg.video_path} minimal={true} /> : <div className="flex items-center justify-center h-full bg-black rounded-xl border border-[#222222] text-[#444444]"><AlertTriangle size={24} /></div>}
+                    </div>
+
+                    {/* Code Snippet & Button */}
+                    <div className="flex-1 flex flex-col justify-between overflow-hidden">
+                        <div className="flex-1 overflow-hidden flex flex-col">
+                            <div className="flex items-center gap-2 mb-2 shrink-0">
+                                <Code2 size={14} className="text-emerald-400" />
+                                <span className="text-xs font-medium text-[#a1a1aa] uppercase tracking-wider">Generated Code</span>
+                            </div>
+                            <div className="bg-black border border-[#222222] rounded-xl overflow-y-auto flex-1 text-xs relative">
+                                <div className="absolute inset-0">
+                                    <SyntaxHighlighter language="python" style={vscDarkPlus} customStyle={{ margin: 0, padding: '12px', background: 'transparent' }} className="no-scrollbar">
+                                        {msg.code || '# Code not available'}
+                                    </SyntaxHighlighter>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center mt-3 shrink-0">
+                             <div className="flex items-center gap-2 text-emerald-400 text-xs font-medium uppercase tracking-wider">
+                                <CheckCircle2 size={14} />
+                                Ready
+                            </div>
+                            {msg.sceneId && onSceneClick && (
+                                <button
+                                    onClick={() => onSceneClick(msg.sceneId)}
+                                    className="flex items-center gap-2 text-xs font-medium text-white bg-[#222222] hover:bg-[#333333] px-4 py-1.5 rounded-lg border border-[#444444] transition-colors shadow-sm"
+                                >
+                                    <PlaySquare size={14} />
+                                    Open in Workspace
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full bg-[#0a0a0a] border border-[#333333] rounded-2xl overflow-hidden shadow-2xl my-6">
             
@@ -69,9 +115,7 @@ const ProcessingBlock = ({ msg, model, onSceneClick }) => {
                 
                 {/* Visualizer / Video Area */}
                 <div className="bg-black border border-[#222222] rounded-xl overflow-hidden relative aspect-video flex items-center justify-center">
-                    {msg.status === 'completed' && msg.video_path ? (
-                        <VideoPlayer mainVideoUrl={msg.video_path} />
-                    ) : isRendering ? (
+                    {isRendering ? (
                         <div className="w-full h-full relative">
                             <video 
                                 src="/manimatic_logo_animation.mp4" 
@@ -134,25 +178,6 @@ const ProcessingBlock = ({ msg, model, onSceneClick }) => {
                     )}
                 </div>
             </div>
-
-            {/* Footer / Actions */}
-            {msg.status === 'completed' && (
-                <div className="bg-[#111111] border-t border-[#333333] p-3 flex justify-between items-center px-4">
-                    <div className="flex items-center gap-2 text-emerald-400 text-xs font-medium uppercase tracking-wider">
-                        <CheckCircle2 size={14} />
-                        Ready
-                    </div>
-                    {msg.sceneId && onSceneClick && (
-                        <button
-                            onClick={() => onSceneClick(msg.sceneId)}
-                            className="flex items-center gap-2 text-xs font-medium text-white bg-[#222222] hover:bg-[#333333] px-3 py-1.5 rounded-lg border border-[#444444] transition-colors"
-                        >
-                            <PlaySquare size={14} />
-                            Open in Workspace
-                        </button>
-                    )}
-                </div>
-            )}
         </div>
     );
 };
