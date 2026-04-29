@@ -171,8 +171,15 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             className="h-full flex flex-col items-center justify-center -mt-20"
                         >
                             <div className="flex flex-col items-center justify-center flex-1 space-y-4">
-                                <div className="p-4 bg-[#222222] text-[#ededed] rounded-2xl border border-[#333333]  ">
-                                    <Logo size={40} />
+                                <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-2xl">
+                                    <video 
+                                        src="/manimatic_logo_animation.mp4" 
+                                        autoPlay 
+                                        loop 
+                                        muted 
+                                        playsInline 
+                                        className="w-full h-auto object-cover"
+                                    />
                                 </div>
                                 <h1 className="text-2xl font-semibold text-white">How can I help you animate?</h1>
                             </div>    <p className="text-[#a1a1aa]">Describe what you want to see, and I'll generate the Manim code.</p>

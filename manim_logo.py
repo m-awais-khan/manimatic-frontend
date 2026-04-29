@@ -12,7 +12,7 @@ class ManimaticLogo(Scene):
         text.arrange(RIGHT, buff=0.2)
         text.move_to(ORIGIN)
         
-        self.play(Write(text, lag_ratio=0.1), run_time=2)
+        self.play(FadeIn(text, shift=UP*0.5, lag_ratio=0.1), run_time=1.5)
         self.wait(0.5)
         
         # 2. Build the Logo geometry (invisible at first)
@@ -62,4 +62,25 @@ class ManimaticLogo(Scene):
             run_time=0.4,
             rate_func=there_and_back
         )
-        self.wait(2)
+        self.wait(1.5)
+        
+        # 6. Smooth reverse to create a perfect loop
+        # We need a fresh text object for the reverse transform since the original was destroyed
+        text_loop = Text("MANIMATIC", font="sans-serif", weight=BOLD, font_size=72)
+        text_loop.set_color(WHITE)
+        text_loop.arrange(RIGHT, buff=-0.1).move_to(ORIGIN)
+        
+        self.play(
+            ReplacementTransform(ma_logo, text_loop),
+            run_time=1.5,
+            path_arc=-PI/3
+        )
+        
+        self.play(
+            text_loop.animate.arrange(RIGHT, buff=0.2).move_to(ORIGIN),
+            run_time=1.2
+        )
+        
+        # 7. Fade out gracefully
+        self.play(FadeOut(text_loop, shift=DOWN*0.5, lag_ratio=0.1), run_time=1.5)
+        self.wait(0.5)
