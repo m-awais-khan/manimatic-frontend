@@ -1,13 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import VideoPlayer from './VideoPlayer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlaySquare, X, ChevronDown, ChevronRight, Code2 } from 'lucide-react';
+import { PlaySquare, X, ChevronDown, ChevronRight, Code2, Copy, Check } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const SceneContainer = ({ scene, isLatest }) => {
     const [isOpen, setIsOpen] = useState(isLatest);
     const [isCodeOpen, setIsCodeOpen] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleCopyCode = async () => {
+        try {
+            await navigator.clipboard.writeText(scene.code);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+        }
+    };
 
     // Auto-collapse this container if a newer scene finishes generating
     useEffect(() => {
@@ -98,7 +109,17 @@ const SceneContainer = ({ scene, isLatest }) => {
                                                 transition={{ duration: 0.3 }}
                                                 className="overflow-hidden"
                                             >
-                                                <div className="border-t border-[#333333] text-sm">
+                                                <div className="border-t border-[#333333] text-sm relative group">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleCopyCode();
+                                                        }}
+                                                        className="absolute top-2 right-2 p-1.5 rounded-md bg-[#222222] text-[#a1a1aa] hover:text-white hover:bg-[#333333] opacity-0 group-hover:opacity-100 transition-all border border-[#333333] z-10"
+                                                        title="Copy code"
+                                                    >
+                                                        {isCopied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
+                                                    </button>
                                                     <SyntaxHighlighter
                                                         language="python"
                                                         style={vscDarkPlus}
