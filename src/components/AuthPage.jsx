@@ -61,8 +61,8 @@ function AuthPage({ onAuthSuccess }) {
         <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
             {/* Ambient background */}
             <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-indigo-600/10 via-transparent to-transparent rounded-full blur-3xl" />
-                <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-purple-600/10 via-transparent to-transparent rounded-full blur-3xl" />
+                <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-white/5 via-transparent to-transparent rounded-full blur-3xl" />
+                <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-zinc-500/5 via-transparent to-transparent rounded-full blur-3xl" />
             </div>
 
             <motion.div
@@ -71,19 +71,26 @@ function AuthPage({ onAuthSuccess }) {
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 className="relative z-10 flex flex-col items-center text-center space-y-8"
             >
-                {/* Logo */}
+                {/* Video Logo */}
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.1, duration: 0.5 }}
-                    className="p-6 bg-[#222222] text-[#ededed] rounded-3xl border border-[#333333]  "
+                    className="w-full max-w-xs mx-auto overflow-hidden rounded-[2rem] border border-[#333333] shadow-2xl bg-black"
                 >
-                    <Logo size={56} />
+                    <video 
+                        src="/manimatic_logo_animation.mp4" 
+                        autoPlay 
+                        loop 
+                        muted 
+                        playsInline 
+                        className="w-full h-auto object-cover scale-[1.05]"
+                    />
                 </motion.div>
 
                 {/* Title */}
                 <div className="space-y-3">
-                    <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400">
+                    <h1 className="text-4xl font-bold text-white tracking-tight">
                         Manimatic
                     </h1>
                     <p className="text-[#a1a1aa] text-lg max-w-sm">
