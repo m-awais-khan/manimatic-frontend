@@ -49,11 +49,12 @@ class ManimaticLogo(Scene):
         )
         self.wait(0.2)
         
-        # 4. Transform into the logo with a dynamic swooping path
+        # 4. Transform into the logo with a dynamic vector effect
+        # The text elegantly expands and fades out while the logo draws itself
         self.play(
-            FadeTransform(text, ma_logo),
-            run_time=1.5,
-            path_arc=PI/3
+            text.animate.scale(1.2).set_opacity(0),
+            Create(ma_logo),
+            run_time=1.5
         )
         
         # 5. Final polish: a subtle pulse to indicate locking into place
@@ -65,15 +66,18 @@ class ManimaticLogo(Scene):
         self.wait(1.5)
         
         # 6. Smooth reverse to create a perfect loop
-        # We need a fresh text object for the reverse transform since the original was destroyed
+        # We need a fresh text object for the reverse transform
         text_loop = Text("MANIMATIC", font="sans-serif", weight=BOLD, font_size=72)
         text_loop.set_color(WHITE)
         text_loop.arrange(RIGHT, buff=-0.1).move_to(ORIGIN)
         
+        # Pre-set it to the expanded, invisible state
+        text_loop.scale(1.2).set_opacity(0)
+        
         self.play(
-            FadeTransform(ma_logo, text_loop),
-            run_time=1.5,
-            path_arc=-PI/3
+            Uncreate(ma_logo),
+            text_loop.animate.scale(1/1.2).set_opacity(1),
+            run_time=1.5
         )
         
         self.play(
