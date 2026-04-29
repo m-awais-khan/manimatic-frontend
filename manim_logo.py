@@ -13,7 +13,7 @@ class ManimaticLogo(Scene):
         text.move_to(ORIGIN)
         
         self.play(FadeIn(text, shift=UP*0.5, lag_ratio=0.1), run_time=1.5)
-        self.wait(0.5)
+        self.wait(0.25)
         
         # 2. Build the Logo geometry (invisible at first)
         v1 = np.array([-2.5, -2, 0])
@@ -69,7 +69,7 @@ class ManimaticLogo(Scene):
             rate_func=rate_functions.ease_in_out_cubic
         )
         
-        self.wait(0.5)
+        self.wait(0.25)
         
         # 6. Smooth reverse to create a perfect loop
         text_loop = Text("MANIMATIC", font="sans-serif", weight=BOLD, font_size=72)
@@ -105,4 +105,4 @@ class ManimaticLogo(Scene):
         
         # 7. Fade out gracefully
         self.play(FadeOut(text_loop, shift=DOWN*0.5, lag_ratio=0.1), run_time=1.5)
-        self.wait(0.5)
+        self.wait(0.25)
