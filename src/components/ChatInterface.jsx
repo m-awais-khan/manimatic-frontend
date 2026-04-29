@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Image as ImageIcon, Menu, PlaySquare, X, ChevronDown } from 'lucide-react';
+import { Send, Menu, PlaySquare, X, ChevronDown, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from './Logo';
 
@@ -263,7 +263,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             {/* Hidden File Input */}
                             <input
                                 type="file"
-                                accept="image/*"
+                                accept=".jpg,.jpeg,.png"
                                 ref={fileInputRef}
                                 onChange={handleImageSelect}
                                 className="hidden"
@@ -273,11 +273,11 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                disabled={isGenerating}
+                                disabled={isGenerating || selectedModel === 'custom-manim-model'}
                                 className="p-3 mb-1.5 ml-1 text-[#a1a1aa] hover:text-white disabled:opacity-50 transition-colors"
-                                title="Attach screenshot"
+                                title={selectedModel === 'custom-manim-model' ? "Custom model doesn't support images" : "Attach image"}
                             >
-                                <ImageIcon size={20} />
+                                <Plus size={20} />
                             </button>
 
                             {/* Text Input */}
