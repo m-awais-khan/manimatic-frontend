@@ -73,7 +73,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                 <button
                                     onClick={onOpenStitcher}
                                     disabled={!hasEnoughChats}
-                                    className="justify-center flex items-center gap-1.5 px-3 py-2.5 bg-white text-black hover:bg-white text-black disabled:bg-[#27272a] disabled:text-[#71717a] text-white rounded-xl text-sm font-medium transition-colors  shadow-purple-500/10 border border-purple-500/50 disabled:border-[#333333] disabled:shadow-none"
+                                    className="justify-center flex items-center gap-1.5 px-3 py-2.5 bg-white text-black hover:bg-[#e5e5e5] disabled:bg-[#27272a] disabled:text-[#71717a] rounded-xl text-sm font-medium transition-colors border border-[#333333] disabled:border-[#333333]"
                                     title={hasEnoughChats ? "Stitch Videos" : "Need at least 2 chats"}
                                 >
                                     <Scissors size={16} />
