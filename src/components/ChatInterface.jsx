@@ -131,14 +131,14 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                         setIsModelDropdownOpen(false);
                                     }}
                                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors ${selectedModel === model.id
-                                        ? 'bg-white text-black/15 text-white'
+                                        ? 'bg-white text-black'
                                         : 'text-[#a1a1aa] hover:bg-[#27272a]/70 hover:text-white'
                                         }`}
                                 >
-                                    <div className={`w-2 h-2 rounded-full shrink-0 ${selectedModel === model.id ? 'bg-white text-black' : 'bg-slate-600'}`} />
+                                    <div className={`w-2 h-2 rounded-full shrink-0 ${selectedModel === model.id ? 'bg-black' : 'bg-slate-600'}`} />
                                     <div>
                                         <div className="font-medium">{model.label}</div>
-                                        <div className="text-xs text-[#71717a]">{model.provider}</div>
+                                        <div className={`text-xs ${selectedModel === model.id ? 'text-black/70' : 'text-[#71717a]'}`}>{model.provider}</div>
                                     </div>
                                 </button>
                             ))}
