@@ -51,7 +51,7 @@ class ManimaticLogo(Scene):
         
         # 4. Transform into the logo with a dynamic swooping path
         self.play(
-            ReplacementTransform(text, ma_logo),
+            FadeTransform(text, ma_logo),
             run_time=1.5,
             path_arc=PI/3
         )
@@ -71,7 +71,7 @@ class ManimaticLogo(Scene):
         text_loop.arrange(RIGHT, buff=-0.1).move_to(ORIGIN)
         
         self.play(
-            ReplacementTransform(ma_logo, text_loop),
+            FadeTransform(ma_logo, text_loop),
             run_time=1.5,
             path_arc=-PI/3
         )
