@@ -5,6 +5,7 @@ import Workspace from './components/Workspace';
 import StitcherModal from './components/StitcherModal';
 import SettingsModal from './components/SettingsModal';
 import AuthPage from './components/AuthPage';
+import BlobVideo from './components/BlobVideo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download } from 'lucide-react';
 import { fetchChats, fetchChatDetails, generateScene, checkSceneStatus, deleteChat, fetchStitchedVideos, deleteStitchedVideo, googleAuth, wipeUserData, deleteAccount } from './api/client';
@@ -295,7 +296,7 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-950 overflow-hidden text-slate-200 font-sans selection:bg-indigo-500/30">
+    <div className="flex h-screen bg-black overflow-hidden text-[#a1a1aa] font-sans selection:bg-white text-black/30">
       <Sidebar
         isOpen={isSidebarOpen}
         toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -404,7 +405,7 @@ function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black  p-6"
             onClick={() => setPreviewStitchedVideo(null)}
           >
             <motion.div
@@ -412,24 +413,24 @@ function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.85, opacity: 0, y: 30 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-slate-900 border border-slate-700/50 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden"
+              className="bg-[#0a0a0a] border border-[#333333] rounded-2xl  w-full max-w-3xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-[#333333]">
                 <h3 className="text-sm font-semibold text-white truncate">{previewStitchedVideo.title}</h3>
                 <div className="flex items-center gap-2">
                   <a
                     href={`${previewStitchedVideo.video_path?.startsWith('http') ? previewStitchedVideo.video_path : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + previewStitchedVideo.video_path}`}
                     download
-                    className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors"
+                    className="p-1.5 text-[#a1a1aa] hover:text-white hover:bg-[#111111] rounded-lg transition-colors"
                     title="Download"
                   >
                     <Download size={16} />
                   </a>
                   <button
                     onClick={() => setPreviewStitchedVideo(null)}
-                    className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                    className="p-1.5 text-[#a1a1aa] hover:text-white hover:bg-[#111111] rounded-lg transition-colors"
                   >
                     <X size={16} />
                   </button>
@@ -437,10 +438,8 @@ function App() {
               </div>
               {/* Video */}
               <div className="p-4 bg-black">
-                <video
-                  src={`${previewStitchedVideo.video_path?.startsWith('http') ? previewStitchedVideo.video_path : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + previewStitchedVideo.video_path}`}
-                  controls
-                  autoPlay
+                <BlobVideo
+                  url={previewStitchedVideo.video_path}
                   className="w-full rounded-lg"
                   style={{ maxHeight: '70vh' }}
                 />
