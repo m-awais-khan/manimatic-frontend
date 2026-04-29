@@ -43,12 +43,12 @@ const VideoPlayer = ({ mainVideoUrl }) => {
     }, [mainVideoUrl]);
 
     return (
-        <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 shadow-xl sticky top-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-400">
+        <div className="bg-[#111111]  border border-[#333333] rounded-2xl p-6  sticky top-8">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-white">
                 <Layers className="w-5 h-5" />
                 Player
             </h2>
-            <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-inner border border-slate-700 flex items-center justify-center relative group">
+            <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-inner border border-[#333333] flex items-center justify-center relative group">
                 {videoSrc ? (
                     <video
                         src={videoSrc}
@@ -58,14 +58,14 @@ const VideoPlayer = ({ mainVideoUrl }) => {
                         crossOrigin="anonymous"
                     />
                 ) : mainVideoUrl ? (
-                    <div className="text-slate-400 animate-pulse">Loading video...</div>
+                    <div className="text-[#a1a1aa] animate-pulse">Loading video...</div>
                 ) : (
                     <div className="text-center p-6 px-10 flex flex-col items-center">
-                        <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4 text-slate-600">
+                        <div className="w-16 h-16 bg-[#111111] rounded-full flex items-center justify-center mb-4 text-[#71717a]">
                             <Layers className="w-8 h-8" />
                         </div>
-                        <p className="text-slate-500 font-medium">No video generated yet</p>
-                        <p className="text-sm text-slate-600 mt-2 text-center">Configure a scene on the left and hit generate to see your Manim animation here.</p>
+                        <p className="text-[#71717a] font-medium">No video generated yet</p>
+                        <p className="text-sm text-[#71717a] mt-2 text-center">Configure a scene on the left and hit generate to see your Manim animation here.</p>
                     </div>
                 )}
             </div>

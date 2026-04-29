@@ -39,7 +39,7 @@ const SceneGenerator = ({ onSceneAdded }) => {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 p-6 rounded-2xl shadow-xl hover:border-slate-600 transition-colors"
+            className="bg-[#111111]  border border-[#333333] p-6 rounded-2xl  hover:border-slate-600 transition-colors"
         >
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-blue-400">
                 <Settings2 className="w-5 h-5" />
@@ -47,11 +47,11 @@ const SceneGenerator = ({ onSceneAdded }) => {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Prompt</label>
+                    <label className="block text-sm font-medium text-[#a1a1aa] mb-1">Prompt</label>
                     <textarea
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full bg-[#0a0a0a] border border-[#333333] rounded-lg p-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                         rows="3"
                         placeholder="E.g., Draw a circle, then transform it into a square..."
                         required
@@ -60,11 +60,11 @@ const SceneGenerator = ({ onSceneAdded }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-1">Subject</label>
+                        <label className="block text-sm font-medium text-[#a1a1aa] mb-1">Subject</label>
                         <select
                             value={subject}
                             onChange={(e) => setSubject(e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-500"
+                            className="w-full bg-[#0a0a0a] border border-[#333333] rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-500"
                         >
                             {["Math", "Physics", "Computer Science", "General"].map(s => (
                                 <option key={s} value={s}>{s}</option>
@@ -72,11 +72,11 @@ const SceneGenerator = ({ onSceneAdded }) => {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-1">Animation Type</label>
+                        <label className="block text-sm font-medium text-[#a1a1aa] mb-1">Animation Type</label>
                         <select
                             value={animationType}
                             onChange={(e) => setAnimationType(e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-500"
+                            className="w-full bg-[#0a0a0a] border border-[#333333] rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-500"
                         >
                             {["2D Graphics", "Text/Equations", "Graph/Plot", "3D"].map(s => (
                                 <option key={s} value={s}>{s}</option>
@@ -84,32 +84,32 @@ const SceneGenerator = ({ onSceneAdded }) => {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-1">Duration (seconds)</label>
+                        <label className="block text-sm font-medium text-[#a1a1aa] mb-1">Duration (seconds)</label>
                         <input
                             type="number"
                             min="2" max="60"
                             value={duration}
                             onChange={(e) => setDuration(parseInt(e.target.value))}
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-500"
+                            className="w-full bg-[#0a0a0a] border border-[#333333] rounded-lg p-2.5 text-white focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
                     <div className="flex gap-4">
                         <div className="flex-1">
-                            <label className="block text-sm font-medium text-slate-300 mb-1">BG Color</label>
+                            <label className="block text-sm font-medium text-[#a1a1aa] mb-1">BG Color</label>
                             <input
                                 type="color"
                                 value={bgColor}
                                 onChange={(e) => setBgColor(e.target.value)}
-                                className="w-full h-10 rounded cursor-pointer bg-slate-900 border border-slate-700"
+                                className="w-full h-10 rounded cursor-pointer bg-[#0a0a0a] border border-[#333333]"
                             />
                         </div>
                         <div className="flex-1">
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Text Color</label>
+                            <label className="block text-sm font-medium text-[#a1a1aa] mb-1">Text Color</label>
                             <input
                                 type="color"
                                 value={textColor}
                                 onChange={(e) => setTextColor(e.target.value)}
-                                className="w-full h-10 rounded cursor-pointer bg-slate-900 border border-slate-700"
+                                className="w-full h-10 rounded cursor-pointer bg-[#0a0a0a] border border-[#333333]"
                             />
                         </div>
                     </div>

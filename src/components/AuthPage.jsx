@@ -58,7 +58,7 @@ function AuthPage({ onAuthSuccess }) {
     }, [onAuthSuccess]);
 
     return (
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden">
+        <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
             {/* Ambient background */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-indigo-600/10 via-transparent to-transparent rounded-full blur-3xl" />
@@ -76,7 +76,7 @@ function AuthPage({ onAuthSuccess }) {
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.1, duration: 0.5 }}
-                    className="p-6 bg-indigo-500/10 rounded-3xl border border-indigo-500/20 shadow-2xl shadow-indigo-500/10"
+                    className="p-6 bg-[#222222] text-[#ededed] rounded-3xl border border-[#333333]  "
                 >
                     <Logo size={56} />
                 </motion.div>
@@ -86,7 +86,7 @@ function AuthPage({ onAuthSuccess }) {
                     <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400">
                         Manimatic
                     </h1>
-                    <p className="text-slate-400 text-lg max-w-sm">
+                    <p className="text-[#a1a1aa] text-lg max-w-sm">
                         Create beautiful animations from natural language with AI
                     </p>
                 </div>
@@ -102,7 +102,7 @@ function AuthPage({ onAuthSuccess }) {
                 </motion.div>
 
                 {/* Footer */}
-                <p className="text-xs text-slate-600 mt-8">
+                <p className="text-xs text-[#71717a] mt-8">
                     Sign in to save your work and access it from anywhere
                 </p>
             </motion.div>

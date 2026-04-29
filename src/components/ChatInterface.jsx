@@ -84,13 +84,13 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
     const isNewChat = !currentChat;
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-slate-950 relative">
+        <div className="flex-1 flex flex-col h-full bg-black relative">
             {/* Toggle Sidebar Button */}
             {!isSidebarOpen && (
                 <div className="absolute top-4 left-4 z-10">
                     <button
                         onClick={toggleSidebar}
-                        className="p-2 bg-slate-800/80 hover:bg-slate-700 backdrop-blur-sm rounded-lg text-slate-400 hover:text-white transition-colors shadow-lg border border-slate-700/50"
+                        className="p-2 bg-[#111111] hover:bg-[#27272a]  rounded-lg text-[#a1a1aa] hover:text-white transition-colors  border border-[#333333]"
                         title="Open Sidebar"
                     >
                         <Menu size={20} />
@@ -103,9 +103,9 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                 <button
                     onClick={() => isNewChat && setIsModelDropdownOpen(!isModelDropdownOpen)}
                     disabled={!isNewChat}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all border backdrop-blur-sm shadow-lg ${isNewChat
-                        ? 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700/50 cursor-pointer'
-                        : 'bg-slate-800/40 text-slate-500 border-slate-800/30 cursor-not-allowed'
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all border   ${isNewChat
+                        ? 'bg-[#111111] hover:bg-[#27272a] text-[#a1a1aa] hover:text-white border-[#333333] cursor-pointer'
+                        : 'bg-[#111111] text-[#71717a] border-[#333333] cursor-not-allowed'
                         }`}
                     title={isNewChat ? 'Select Model' : 'Model cannot be changed after chat starts'}
                 >
@@ -121,7 +121,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -5, scale: 0.95 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute top-full left-0 mt-1 w-56 bg-slate-800 border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden z-20"
+                            className="absolute top-full left-0 mt-1 w-56 bg-[#111111] border border-[#333333] rounded-xl  overflow-hidden z-20"
                         >
                             {MODELS.map((model) => (
                                 <button
@@ -131,14 +131,14 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                         setIsModelDropdownOpen(false);
                                     }}
                                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors ${selectedModel === model.id
-                                        ? 'bg-indigo-600/15 text-indigo-400'
-                                        : 'text-slate-300 hover:bg-slate-700/70 hover:text-white'
+                                        ? 'bg-white text-black/15 text-white'
+                                        : 'text-[#a1a1aa] hover:bg-[#27272a]/70 hover:text-white'
                                         }`}
                                 >
-                                    <div className={`w-2 h-2 rounded-full shrink-0 ${selectedModel === model.id ? 'bg-indigo-400' : 'bg-slate-600'}`} />
+                                    <div className={`w-2 h-2 rounded-full shrink-0 ${selectedModel === model.id ? 'bg-white text-black' : 'bg-slate-600'}`} />
                                     <div>
                                         <div className="font-medium">{model.label}</div>
-                                        <div className="text-xs text-slate-500">{model.provider}</div>
+                                        <div className="text-xs text-[#71717a]">{model.provider}</div>
                                     </div>
                                 </button>
                             ))}
@@ -152,7 +152,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                 <div className="absolute top-4 right-4 z-10">
                     <button
                         onClick={togglePreview}
-                        className="flex items-center gap-2 px-3 py-2 bg-slate-800/80 hover:bg-slate-700 backdrop-blur-sm rounded-lg text-slate-400 hover:text-white transition-colors shadow-lg border border-slate-700/50 font-medium text-sm"
+                        className="flex items-center gap-2 px-3 py-2 bg-[#111111] hover:bg-[#27272a]  rounded-lg text-[#a1a1aa] hover:text-white transition-colors  border border-[#333333] font-medium text-sm"
                     >
                         <PlaySquare size={16} />
                         Show Preview
@@ -171,11 +171,11 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             className="h-full flex flex-col items-center justify-center -mt-20"
                         >
                             <div className="flex flex-col items-center justify-center flex-1 space-y-4">
-                                <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-lg shadow-indigo-500/10">
+                                <div className="p-4 bg-[#222222] text-[#ededed] rounded-2xl border border-[#333333]  ">
                                     <Logo size={40} />
                                 </div>
-                                <h1 className="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">How can I help you animate?</h1>
-                            </div>    <p className="text-slate-400">Describe what you want to see, and I'll generate the Manim code.</p>
+                                <h1 className="text-2xl font-semibold text-white">How can I help you animate?</h1>
+                            </div>    <p className="text-[#a1a1aa]">Describe what you want to see, and I'll generate the Manim code.</p>
                         </motion.div>
                     ) : (
                         <div className="max-w-3xl mx-auto space-y-6">
@@ -187,15 +187,15 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                     className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     {msg.role === 'assistant' && (
-                                        <div className="p-1.5 bg-indigo-600 rounded-lg shrink-0 border border-indigo-500/50 shadow-md">
+                                        <div className="p-1.5 bg-white text-black rounded-lg shrink-0 border border-[#333333] shadow-md">
                                             <Logo size={18} />
                                         </div>
                                     )}
                                     <div
                                         className={`px-4 py-3 rounded-2xl max-w-[80%] ${msg.role === 'user'
-                                            ? 'bg-indigo-600 text-white rounded-br-sm'
-                                            : 'bg-slate-800 text-slate-200 border border-slate-700/50 rounded-bl-sm'
-                                            } ${msg.role === 'assistant' && msg.status === 'completed' ? 'cursor-pointer hover:ring-1 hover:ring-indigo-500/50 transition-shadow' : ''}`}
+                                            ? 'bg-white text-black rounded-br-sm'
+                                            : 'bg-[#111111] text-[#a1a1aa] border border-[#333333] rounded-bl-sm'
+                                            } ${msg.role === 'assistant' && msg.status === 'completed' ? 'cursor-pointer hover:ring-1 hover:ring-[#ededed] transition-shadow' : ''}`}
                                         onClick={() => {
                                             if (msg.role === 'assistant' && msg.status === 'completed' && msg.sceneId && onSceneClick) {
                                                 onSceneClick(msg.sceneId);
@@ -215,7 +215,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                         {msg.status && (
                                             <div className="mt-2 text-xs opacity-70 flex items-center gap-2">
                                                 {msg.status === 'pending' || msg.status === 'generating_code' || msg.status === 'rendering' ? (
-                                                    <span className="flex items-center gap-2"><div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse" /> {msg.status.replace('_', ' ')}...</span>
+                                                    <span className="flex items-center gap-2"><div className="w-2 h-2 bg-white text-black rounded-full animate-pulse" /> {msg.status.replace('_', ' ')}...</span>
                                                 ) : msg.status === 'completed' ? (
                                                     <span className="text-emerald-400">Generation Complete</span>
                                                 ) : (
@@ -232,18 +232,18 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
             </div>
 
             {/* Input Area */}
-            <div className={`p-4 ${isNewChat ? 'absolute bottom-8 left-0 right-0 max-w-3xl mx-auto' : 'border-t border-slate-800/50 bg-slate-950/80 backdrop-blur-sm'}`}>
+            <div className={`p-4 ${isNewChat ? 'absolute bottom-8 left-0 right-0 max-w-3xl mx-auto' : 'border-t border-[#333333] bg-black '}`}>
                 <div className={isNewChat ? '' : 'max-w-3xl mx-auto'}>
-                    <form onSubmit={handleSubmit} className="relative bg-slate-800 rounded-2xl border border-slate-700/50 shadow-xl transition-shadow transition-colors focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/50">
+                    <form onSubmit={handleSubmit} className="relative bg-[#111111] rounded-2xl border border-[#333333]  transition-shadow transition-colors focus-within:border-[#333333] focus-within:ring-1 focus-within:ring-[#ededed]">
                         {/* Image Preview Area */}
                         {imagePreview && (
                             <div className="pt-3 px-4 pb-1">
                                 <div className="relative inline-block">
-                                    <img src={imagePreview} alt="Reference" className="w-20 h-20 object-cover rounded-lg border border-slate-700" />
+                                    <img src={imagePreview} alt="Reference" className="w-20 h-20 object-cover rounded-lg border border-[#333333]" />
                                     <button
                                         type="button"
                                         onClick={clearImage}
-                                        className="absolute -top-2 -right-2 p-1 bg-slate-700 hover:bg-slate-600 outline-2 outline-slate-800 outline text-slate-300 rounded-full transition-colors"
+                                        className="absolute -top-2 -right-2 p-1 bg-[#27272a] hover:bg-slate-600 outline-2 outline-slate-800 outline text-[#a1a1aa] rounded-full transition-colors"
                                     >
                                         <X size={12} />
                                     </button>
@@ -266,7 +266,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isGenerating}
-                                className="p-3 mb-1.5 ml-1 text-slate-400 hover:text-indigo-400 disabled:opacity-50 transition-colors"
+                                className="p-3 mb-1.5 ml-1 text-[#a1a1aa] hover:text-white disabled:opacity-50 transition-colors"
                                 title="Attach screenshot"
                             >
                                 <ImageIcon size={20} />
@@ -284,7 +284,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                     }
                                 }}
                                 placeholder="Ask anything about math, physics, or drawing..."
-                                className="flex-1 bg-transparent py-4 px-2 text-slate-200 placeholder-slate-500 focus:outline-none resize-none h-[60px] max-h-[200px] no-scrollbar"
+                                className="flex-1 bg-transparent py-4 px-2 text-[#a1a1aa] placeholder-slate-500 focus:outline-none resize-none h-[60px] max-h-[200px] no-scrollbar"
                                 rows="1"
                             />
 
@@ -292,14 +292,14 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             <button
                                 type="submit"
                                 disabled={(!prompt.trim() && !selectedImage) || isGenerating}
-                                className="m-3 p-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl transition-colors"
+                                className="m-3 p-2 bg-white hover:bg-[#e5e5e5] disabled:bg-[#27272a] disabled:text-[#71717a] text-white rounded-xl transition-colors"
                             >
                                 <Send size={18} className={(prompt.trim() || selectedImage) && !isGenerating ? 'translate-x-0.5 -translate-y-0.5 transition-transform' : ''} />
                             </button>
                         </div>
                     </form>
                     {isNewChat && (
-                        <p className="text-center text-xs text-slate-500 mt-4">
+                        <p className="text-center text-xs text-[#71717a] mt-4">
                             Manimatic can make mistakes. Verify important animations.
                         </p>
                     )}

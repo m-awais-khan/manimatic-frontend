@@ -46,18 +46,18 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                         animate={{ width: 260, opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="h-full bg-slate-900 border-r border-slate-800 flex flex-col pt-4 overflow-hidden shrink-0"
+                        className="h-full bg-[#0a0a0a] border-r border-[#333333] flex flex-col pt-4 overflow-hidden shrink-0"
                     >
                         {/* Header */}
                         <div className="flex flex-col gap-3 px-4 mb-4">
                             <div className="flex items-center justify-between pt-1">
                                 <div className="flex items-center gap-2.5">
                                     <Logo size={28} />
-                                    <span className="font-semibold text-xl tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">Manimatic</span>
+                                    <span className="font-semibold text-xl tracking-wide text-white">Manimatic</span>
                                 </div>
                                 <button
                                     onClick={toggleSidebar}
-                                    className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"
+                                    className="p-1.5 hover:bg-[#111111] rounded-lg text-[#a1a1aa] hover:text-white transition-colors"
                                 >
                                     <Menu size={20} />
                                 </button>
@@ -65,7 +65,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                             <div className="flex gap-2">
                                 <button
                                     onClick={startNewChat}
-                                    className="flex-1 justify-center flex items-center gap-2 px-3 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-indigo-500/10 border border-indigo-500/50"
+                                    className="flex-1 justify-center flex items-center gap-2 px-3 py-2.5 bg-white text-black hover:bg-[#e5e5e5] rounded-xl text-sm font-medium transition-colors   border border-[#333333]"
                                 >
                                     <MessageSquarePlus size={16} />
                                     New Chat
@@ -73,7 +73,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                 <button
                                     onClick={onOpenStitcher}
                                     disabled={!hasEnoughChats}
-                                    className="justify-center flex items-center gap-1.5 px-3 py-2.5 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-purple-500/10 border border-purple-500/50 disabled:border-slate-700 disabled:shadow-none"
+                                    className="justify-center flex items-center gap-1.5 px-3 py-2.5 bg-white text-black hover:bg-white text-black disabled:bg-[#27272a] disabled:text-[#71717a] text-white rounded-xl text-sm font-medium transition-colors  shadow-purple-500/10 border border-purple-500/50 disabled:border-[#333333] disabled:shadow-none"
                                     title={hasEnoughChats ? "Stitch Videos" : "Need at least 2 chats"}
                                 >
                                     <Scissors size={16} />
@@ -84,13 +84,13 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                         {/* Scrollable Content */}
                         <div className="flex-1 overflow-y-auto px-3 space-y-1">
                             {/* Chat History */}
-                            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-2 px-2">History</h3>
+                            <h3 className="text-xs font-semibold text-[#71717a] uppercase tracking-wider mb-2 mt-2 px-2">History</h3>
                             {chats.map((chat) => (
                                 <div
                                     key={chat.id}
                                     className={`w-full group flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${currentChat === chat.id
-                                        ? 'bg-slate-800 text-indigo-400'
-                                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                                        ? 'bg-[#111111] text-white'
+                                        : 'text-[#a1a1aa] hover:bg-[#111111] hover:text-white'
                                         }`}
                                 >
                                     <button
@@ -105,7 +105,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                             e.stopPropagation();
                                             setChatToDelete(chat);
                                         }}
-                                        className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-700/50 rounded-md transition-all shrink-0"
+                                        className="opacity-0 group-hover:opacity-100 p-1.5 text-[#a1a1aa] hover:text-rose-400 hover:bg-[#27272a]/50 rounded-md transition-all shrink-0"
                                         title="Delete Chat"
                                     >
                                         <Trash2 size={14} />
@@ -115,13 +115,13 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
 
                             {/* Stitched Videos Section */}
                             {stitchedVideos && stitchedVideos.length > 0 && (
-                                <div className="mt-4 pt-4 border-t border-slate-800/50">
+                                <div className="mt-4 pt-4 border-t border-[#333333]">
                                     <button
                                         onClick={() => setShowStitched(!showStitched)}
                                         className="w-full flex items-center gap-2 px-2 mb-2"
                                     >
-                                        {showStitched ? <ChevronDown size={14} className="text-slate-500" /> : <ChevronRight size={14} className="text-slate-500" />}
-                                        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Stitched</h3>
+                                        {showStitched ? <ChevronDown size={14} className="text-[#71717a]" /> : <ChevronRight size={14} className="text-[#71717a]" />}
+                                        <h3 className="text-xs font-semibold text-[#71717a] uppercase tracking-wider">Stitched</h3>
                                     </button>
                                     <AnimatePresence>
                                         {showStitched && stitchedVideos.map(sv => (
@@ -130,17 +130,17 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 exit={{ opacity: 0 }}
-                                                className="group flex items-center justify-between px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                                                className="group flex items-center justify-between px-3 py-2.5 rounded-lg text-sm text-[#a1a1aa] hover:bg-[#111111] hover:text-white transition-colors"
                                             >
                                                 <button
                                                     onClick={() => onPlayStitched && onPlayStitched(sv)}
                                                     className="flex items-center gap-3 flex-1 truncate text-left"
                                                 >
-                                                    <Scissors size={14} className="text-purple-400 shrink-0" />
+                                                    <Scissors size={14} className="text-white shrink-0" />
                                                     <span className="truncate">{sv.title}</span>
                                                 </button>
                                                 {sv.status === 'processing' && (
-                                                    <span className="text-xs text-purple-400 animate-pulse shrink-0">Processing...</span>
+                                                    <span className="text-xs text-white animate-pulse shrink-0">Processing...</span>
                                                 )}
                                                 {sv.status === 'completed' && (
                                                     <button
@@ -148,7 +148,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                                             e.stopPropagation();
                                                             setStitchedToDelete(sv);
                                                         }}
-                                                        className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-700/50 rounded-md transition-all shrink-0"
+                                                        className="opacity-0 group-hover:opacity-100 p-1.5 text-[#a1a1aa] hover:text-rose-400 hover:bg-[#27272a]/50 rounded-md transition-all shrink-0"
                                                         title="Delete"
                                                     >
                                                         <Trash2 size={14} />
@@ -162,17 +162,17 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                         </div>
 
                         {/* Footer */}
-                        <div className="p-4 border-t border-slate-800 space-y-1">
+                        <div className="p-4 border-t border-[#333333] space-y-1">
                             {/* User Profile Button */}
                             <div className="relative" ref={accountMenuRef}>
                                 <button
                                     onClick={() => setShowAccountMenu(!showAccountMenu)}
-                                    className="w-full flex items-center gap-3 px-3 py-2 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors text-sm"
+                                    className="w-full flex items-center gap-3 px-3 py-2 text-[#a1a1aa] hover:bg-[#111111] hover:text-white rounded-lg transition-colors text-sm"
                                 >
                                     {userProfile?.profile_picture ? (
                                         <img src={userProfile.profile_picture} alt="" referrerPolicy="no-referrer" className="w-7 h-7 rounded-full object-cover border border-slate-600 shrink-0" />
                                     ) : (
-                                        <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                        <div className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center text-white text-xs font-bold shrink-0">
                                             {(userProfile?.display_name || 'U')[0]}
                                         </div>
                                     )}
@@ -187,15 +187,15 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                             exit={{ opacity: 0, y: 5, scale: 0.95 }}
                                             transition={{ duration: 0.15 }}
-                                            className="absolute bottom-full left-0 right-0 mb-1 bg-slate-800 border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden z-30"
+                                            className="absolute bottom-full left-0 right-0 mb-1 bg-[#111111] border border-[#333333] rounded-xl  overflow-hidden z-30"
                                         >
-                                            <div className="p-2 border-b border-slate-700/50">
-                                                <p className="text-xs text-slate-500 px-2 truncate">{userProfile?.email}</p>
+                                            <div className="p-2 border-b border-[#333333]">
+                                                <p className="text-xs text-[#71717a] px-2 truncate">{userProfile?.email}</p>
                                             </div>
                                             <div className="p-1">
                                                 <button
                                                     onClick={() => { setShowAccountMenu(false); onSignOut && onSignOut(); }}
-                                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-300 hover:bg-slate-700/70 hover:text-white rounded-lg transition-colors"
+                                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#a1a1aa] hover:bg-[#27272a]/70 hover:text-white rounded-lg transition-colors"
                                                 >
                                                     <LogOut size={15} /> Sign Out
                                                 </button>
@@ -206,7 +206,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                                             onWipeData && onWipeData();
                                                         }
                                                     }}
-                                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-amber-400 hover:bg-slate-700/70 rounded-lg transition-colors"
+                                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-amber-400 hover:bg-[#27272a]/70 rounded-lg transition-colors"
                                                 >
                                                     <DatabaseZap size={15} /> Wipe All Data
                                                 </button>
@@ -217,7 +217,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                                             onDeleteAccount && onDeleteAccount();
                                                         }
                                                     }}
-                                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-rose-400 hover:bg-slate-700/70 rounded-lg transition-colors"
+                                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-rose-400 hover:bg-[#27272a]/70 rounded-lg transition-colors"
                                                 >
                                                     <UserX size={15} /> Delete Account
                                                 </button>
@@ -229,7 +229,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
 
                             <button
                                 onClick={onOpenSettings}
-                                className="w-full flex items-center gap-3 px-3 py-2 text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors text-sm"
+                                className="w-full flex items-center gap-3 px-3 py-2 text-[#a1a1aa] hover:bg-[#111111] hover:text-white rounded-lg transition-colors text-sm"
                             >
                                 <Settings size={18} />
                                 <span>Settings</span>
@@ -246,13 +246,13 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm px-4"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black  px-4"
                     >
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl max-w-sm w-full"
+                            className="bg-[#0a0a0a] border border-[#333333] p-6 rounded-2xl  max-w-sm w-full"
                         >
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="p-3 bg-red-500/10 text-rose-500 rounded-full shrink-0">
@@ -260,7 +260,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold text-white">Delete Chat?</h3>
-                                    <p className="text-sm text-slate-400 mt-1 line-clamp-2">
+                                    <p className="text-sm text-[#a1a1aa] mt-1 line-clamp-2">
                                         "{chatToDelete.title}" will be permanently removed.
                                     </p>
                                 </div>
@@ -268,13 +268,13 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                             <div className="flex gap-3 justify-end mt-6">
                                 <button
                                     onClick={() => setChatToDelete(null)}
-                                    className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                    className="px-4 py-2 text-sm font-medium text-[#a1a1aa] hover:text-white hover:bg-[#111111] rounded-lg transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmDelete}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors shadow-lg shadow-rose-600/20"
+                                    className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors  shadow-rose-600/20"
                                 >
                                     Delete
                                 </button>
@@ -291,13 +291,13 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm px-4"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black  px-4"
                     >
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-2xl max-w-sm w-full"
+                            className="bg-[#0a0a0a] border border-[#333333] p-6 rounded-2xl  max-w-sm w-full"
                         >
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="p-3 bg-red-500/10 text-rose-500 rounded-full shrink-0">
@@ -305,7 +305,7 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold text-white">Delete Stitched Video?</h3>
-                                    <p className="text-sm text-slate-400 mt-1 line-clamp-2">
+                                    <p className="text-sm text-[#a1a1aa] mt-1 line-clamp-2">
                                         "{stitchedToDelete.title}" will be permanently removed.
                                     </p>
                                 </div>
@@ -313,13 +313,13 @@ function Sidebar({ isOpen, toggleSidebar, chats, currentChat, setCurrentChat, st
                             <div className="flex gap-3 justify-end mt-6">
                                 <button
                                     onClick={() => setStitchedToDelete(null)}
-                                    className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                    className="px-4 py-2 text-sm font-medium text-[#a1a1aa] hover:text-white hover:bg-[#111111] rounded-lg transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmDeleteStitched}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors shadow-lg shadow-rose-600/20"
+                                    className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors  shadow-rose-600/20"
                                 >
                                     Delete
                                 </button>

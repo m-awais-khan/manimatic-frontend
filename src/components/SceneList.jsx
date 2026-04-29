@@ -30,8 +30,8 @@ const SceneList = ({ scenes, onUpdateScene }) => {
 
     if (scenes.length === 0) {
         return (
-            <div className="text-center py-12 bg-slate-800/20 rounded-xl border border-slate-700 border-dashed">
-                <p className="text-slate-400">No scenes generated yet. Start by generating one above!</p>
+            <div className="text-center py-12 bg-[#111111] rounded-xl border border-[#333333] border-dashed">
+                <p className="text-[#a1a1aa]">No scenes generated yet. Start by generating one above!</p>
             </div>
         );
     }
@@ -47,7 +47,7 @@ const SceneList = ({ scenes, onUpdateScene }) => {
             case 'error':
                 return <AlertCircle className="w-5 h-5 text-red-400" />;
             default:
-                return <RefreshCw className="w-5 h-5 text-slate-400" />;
+                return <RefreshCw className="w-5 h-5 text-[#a1a1aa]" />;
         }
     };
 
@@ -64,7 +64,7 @@ const SceneList = ({ scenes, onUpdateScene }) => {
 
     return (
         <div className="space-y-4">
-            <h3 className="text-lg font-medium text-slate-200">Generated Scenes ({scenes.length})</h3>
+            <h3 className="text-lg font-medium text-[#a1a1aa]">Generated Scenes ({scenes.length})</h3>
             <div className="grid gap-4">
                 <AnimatePresence>
                     {scenes.map((scene) => (
@@ -73,19 +73,19 @@ const SceneList = ({ scenes, onUpdateScene }) => {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
-                            className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                            className="bg-[#111111] p-4 rounded-xl border border-[#333333] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                         >
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-3 mb-1">
                                     {getStatusIcon(scene.status)}
-                                    <span className="font-medium text-slate-200 capitalize">
+                                    <span className="font-medium text-[#a1a1aa] capitalize">
                                         {getStatusMessage(scene.status)}
                                     </span>
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 pointer-events-none">
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-[#27272a] text-[#a1a1aa] pointer-events-none">
                                         {scene.animation_type}
                                     </span>
                                 </div>
-                                <p className="text-sm text-slate-400 truncate pr-4">
+                                <p className="text-sm text-[#a1a1aa] truncate pr-4">
                                     "{scene.prompt}"
                                 </p>
                                 {scene.status === 'error' && (
@@ -100,7 +100,7 @@ const SceneList = ({ scenes, onUpdateScene }) => {
                                     href={`${scene.video_path?.startsWith('http') ? scene.video_path : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + scene.video_path}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm text-white transition-colors whitespace-nowrap"
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#27272a] hover:bg-slate-600 rounded-lg text-sm text-white transition-colors whitespace-nowrap"
                                 >
                                     <Play className="w-4 h-4" />
                                     Watch Video
