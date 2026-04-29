@@ -98,54 +98,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                 </div>
             )}
 
-            {/* Model Selector */}
-            <div className={`absolute top-4 z-10 ${!isSidebarOpen ? 'left-16' : 'left-4'}`} ref={modelDropdownRef}>
-                <button
-                    onClick={() => isNewChat && setIsModelDropdownOpen(!isModelDropdownOpen)}
-                    disabled={!isNewChat}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all border   ${isNewChat
-                        ? 'bg-[#111111] hover:bg-[#27272a] text-[#a1a1aa] hover:text-white border-[#333333] cursor-pointer'
-                        : 'bg-[#111111] text-[#71717a] border-[#333333] cursor-not-allowed'
-                        }`}
-                    title={isNewChat ? 'Select Model' : 'Model cannot be changed after chat starts'}
-                >
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                    {currentModel.label}
-                    {isNewChat && <ChevronDown size={14} className={`transition-transform ${isModelDropdownOpen ? 'rotate-180' : ''}`} />}
-                </button>
 
-                <AnimatePresence>
-                    {isModelDropdownOpen && isNewChat && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -5, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -5, scale: 0.95 }}
-                            transition={{ duration: 0.15 }}
-                            className="absolute top-full left-0 mt-1 w-56 bg-[#111111] border border-[#333333] rounded-xl  overflow-hidden z-20"
-                        >
-                            {MODELS.map((model) => (
-                                <button
-                                    key={model.id}
-                                    onClick={() => {
-                                        onModelChange && onModelChange(model.id);
-                                        setIsModelDropdownOpen(false);
-                                    }}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors ${selectedModel === model.id
-                                        ? 'bg-white text-black'
-                                        : 'text-[#a1a1aa] hover:bg-[#27272a]/70 hover:text-white'
-                                        }`}
-                                >
-                                    <div className={`w-2 h-2 rounded-full shrink-0 ${selectedModel === model.id ? 'bg-black' : 'bg-slate-600'}`} />
-                                    <div>
-                                        <div className="font-medium">{model.label}</div>
-                                        <div className={`text-xs ${selectedModel === model.id ? 'text-black/70' : 'text-[#71717a]'}`}>{model.provider}</div>
-                                    </div>
-                                </button>
-                            ))}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
 
             {/* Top Right Controls */}
             {hasCompletedScene && !isPreviewOpen && (
@@ -242,6 +195,54 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
             <div className={`p-4 ${isNewChat ? 'absolute bottom-8 left-0 right-0 max-w-3xl mx-auto' : 'border-t border-[#333333] bg-black '}`}>
                 <div className={isNewChat ? '' : 'max-w-3xl mx-auto'}>
                     <form onSubmit={handleSubmit} className="relative bg-[#111111] rounded-2xl border border-[#333333]  transition-shadow transition-colors focus-within:border-[#333333] focus-within:ring-1 focus-within:ring-[#ededed]">
+                        
+                        {/* Model Selector inside Input Box */}
+                        <div className="pt-2 px-3 pb-0" ref={modelDropdownRef}>
+                            <button
+                                type="button"
+                                onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                                className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-[#a1a1aa] hover:text-white hover:bg-[#27272a] transition-all"
+                                title="Change Model"
+                            >
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                                {currentModel.label}
+                                <ChevronDown size={12} className={`transition-transform ${isModelDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            <AnimatePresence>
+                                {isModelDropdownOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute bottom-full left-0 mb-2 w-56 bg-[#111111] border border-[#333333] rounded-xl overflow-hidden z-20 shadow-xl"
+                                    >
+                                        {MODELS.map((model) => (
+                                            <button
+                                                type="button"
+                                                key={model.id}
+                                                onClick={() => {
+                                                    onModelChange && onModelChange(model.id);
+                                                    setIsModelDropdownOpen(false);
+                                                }}
+                                                className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors ${selectedModel === model.id
+                                                    ? 'bg-white text-black'
+                                                    : 'text-[#a1a1aa] hover:bg-[#27272a]/70 hover:text-white'
+                                                    }`}
+                                            >
+                                                <div className={`w-2 h-2 rounded-full shrink-0 ${selectedModel === model.id ? 'bg-black' : 'bg-slate-600'}`} />
+                                                <div>
+                                                    <div className="font-medium">{model.label}</div>
+                                                    <div className={`text-xs ${selectedModel === model.id ? 'text-black/70' : 'text-[#71717a]'}`}>{model.provider}</div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
                         {/* Image Preview Area */}
                         {imagePreview && (
                             <div className="pt-3 px-4 pb-1">
