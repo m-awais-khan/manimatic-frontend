@@ -66,7 +66,7 @@ class ManimaticLogo(Scene):
         self.play(
             ReplacementTransform(flat_line, ma_logo),
             run_time=1.2,
-            rate_func=rate_functions.ease_out_elastic
+            rate_func=rate_functions.ease_in_out_cubic
         )
         
         # 5. Final polish: a subtle pulse to indicate locking into place
@@ -91,7 +91,7 @@ class ManimaticLogo(Scene):
         self.play(
             ReplacementTransform(ma_logo, flat_line_loop),
             run_time=1.2,
-            rate_func=rate_functions.ease_in_back
+            rate_func=rate_functions.ease_in_out_cubic
         )
         
         self.add(text_loop)
