@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, ChevronDown, ChevronRight, Play, Film, ArrowUp, ArrowDown, Scissors } from 'lucide-react';
 import { fetchChats, fetchChatDetails, createStitch, fetchStitchedVideos } from '../api/client';
 import Logo from './Logo';
+import VideoPlayer from './VideoPlayer';
 
 function StitcherModal({ isOpen, onClose, onStitchComplete }) {
     const [chats, setChats] = useState([]);
@@ -278,13 +279,9 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                             <X size={14} />
                                         </button>
                                     </div>
-                                    <video
-                                        src={`${previewVideo?.startsWith('http') ? previewVideo : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + previewVideo}`}
-                                        controls
-                                        autoPlay
-                                        className="w-full rounded-lg border border-[#333333] bg-black"
-                                        style={{ maxHeight: '180px' }}
-                                    />
+                                    <div className="w-full rounded-lg overflow-hidden border border-[#333333] bg-black" style={{ maxHeight: '180px' }}>
+                                        <VideoPlayer videoUrl={previewVideo} />
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -316,10 +313,10 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                             <span className="text-xs font-bold text-white w-6 text-center shrink-0">{index + 1}</span>
                                             <span className="text-sm text-[#a1a1aa] truncate flex-1">{video.label}</span>
 
-                                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center gap-1 transition-opacity">
                                                 <button
                                                     onClick={() => setPreviewVideo(video.video_path)}
-                                                    className="p-1 text-[#71717a] hover:text-white"
+                                                    className="p-1.5 text-[#a1a1aa] hover:text-white bg-[#222222] hover:bg-[#333333] rounded-md transition-colors"
                                                     title="Preview"
                                                 >
                                                     <Play size={12} />
@@ -327,7 +324,7 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                                 <button
                                                     onClick={() => moveVideo(index, -1)}
                                                     disabled={index === 0}
-                                                    className="p-1 text-[#71717a] hover:text-white disabled:opacity-20"
+                                                    className="p-1.5 text-[#a1a1aa] hover:text-white bg-[#222222] hover:bg-[#333333] rounded-md disabled:opacity-30 transition-colors"
                                                     title="Move up"
                                                 >
                                                     <ArrowUp size={12} />
@@ -335,14 +332,14 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                                 <button
                                                     onClick={() => moveVideo(index, 1)}
                                                     disabled={index === selectedVideos.length - 1}
-                                                    className="p-1 text-[#71717a] hover:text-white disabled:opacity-20"
+                                                    className="p-1.5 text-[#a1a1aa] hover:text-white bg-[#222222] hover:bg-[#333333] rounded-md disabled:opacity-30 transition-colors"
                                                     title="Move down"
                                                 >
                                                     <ArrowDown size={12} />
                                                 </button>
                                                 <button
                                                     onClick={() => removeVideo(index)}
-                                                    className="p-1 text-[#71717a] hover:text-rose-400"
+                                                    className="p-1.5 text-[#a1a1aa] hover:text-white bg-[#222222] hover:bg-rose-900 rounded-md transition-colors"
                                                     title="Remove"
                                                 >
                                                     <Trash2 size={12} />
@@ -372,8 +369,8 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                                 key={t.id}
                                                 onClick={() => setTransition(t.id)}
                                                 className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${transition === t.id
-                                                        ? 'bg-white text-black/20 border-purple-500/50 text-white ring-1 ring-purple-500/30'
-                                                        : 'bg-[#111111] border-[#333333] text-[#a1a1aa] hover:text-[#a1a1aa] hover:bg-[#111111]'
+                                                        ? 'bg-white text-black border-white ring-1 ring-white/30'
+                                                        : 'bg-[#111111] border-[#333333] text-[#a1a1aa] hover:text-white hover:bg-[#27272a]'
                                                     }`}
                                                 title={t.desc}
                                             >
@@ -386,7 +383,7 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                 <button
                                     onClick={handleStitch}
                                     disabled={selectedVideos.length < 2 || isStitching}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black hover:bg-white text-black disabled:bg-[#27272a] disabled:text-[#71717a] text-white rounded-xl text-sm font-medium transition-colors  shadow-purple-600/20 border border-purple-500/50"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black hover:bg-[#e5e5e5] disabled:bg-[#27272a] disabled:text-[#71717a] rounded-xl text-sm font-medium transition-colors border border-[#333333]"
                                 >
                                     <Scissors size={16} />
                                     {isStitching ? 'Stitching...' : `Stitch ${selectedVideos.length} Videos`}
