@@ -62,14 +62,14 @@ function SettingsModal({ isOpen, onClose, resolution, onResolutionChange }) {
                                         key={res.value}
                                         onClick={() => setSelected(res.value)}
                                         className={`flex flex-col items-start px-4 py-3 rounded-xl border text-left transition-all ${selected === res.value
-                                                ? 'bg-white text-black/15 border-[#333333] ring-1 ring-[#ededed]'
+                                                ? 'bg-white text-black border-[#333333] ring-1 ring-[#ededed]'
                                                 : 'bg-[#111111] border-[#333333] hover:bg-[#111111] hover:border-slate-600'
                                             }`}
                                     >
-                                        <span className={`text-sm font-bold ${selected === res.value ? 'text-white' : 'text-[#a1a1aa]'}`}>
+                                        <span className={`text-sm font-bold ${selected === res.value ? 'text-black' : 'text-[#a1a1aa]'}`}>
                                             {res.label}
                                         </span>
-                                        <span className="text-xs text-[#71717a] mt-0.5">{res.desc}</span>
+                                        <span className={`text-xs mt-0.5 ${selected === res.value ? 'text-[#333333]' : 'text-[#71717a]'}`}>{res.desc}</span>
                                     </button>
                                 ))}
                             </div>
@@ -86,7 +86,7 @@ function SettingsModal({ isOpen, onClose, resolution, onResolutionChange }) {
                         </button>
                         <button
                             onClick={handleSave}
-                            className="px-4 py-2 text-sm font-medium text-white bg-white text-black hover:bg-[#e5e5e5] rounded-xl transition-colors  "
+                            className="px-4 py-2 text-sm font-medium bg-white text-black hover:bg-[#e5e5e5] rounded-xl transition-colors"
                         >
                             Save
                         </button>

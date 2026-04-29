@@ -292,7 +292,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             <button
                                 type="submit"
                                 disabled={(!prompt.trim() && !selectedImage) || isGenerating}
-                                className="m-3 p-2 bg-white hover:bg-[#e5e5e5] disabled:bg-[#27272a] disabled:text-[#71717a] text-white rounded-xl transition-colors"
+                                className="m-3 p-2 bg-white hover:bg-[#e5e5e5] disabled:bg-[#27272a] disabled:text-[#71717a] text-black rounded-xl transition-colors"
                             >
                                 <Send size={18} className={(prompt.trim() || selectedImage) && !isGenerating ? 'translate-x-0.5 -translate-y-0.5 transition-transform' : ''} />
                             </button>
