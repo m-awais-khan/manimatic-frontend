@@ -8,12 +8,14 @@ const api = axios.create({
     baseURL: baseURL,
 });
 
-// Inject auth token into every request
+// Inject auth token and ngrok bypass into every request
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('manimatic_token');
     if (token) {
         config.headers.Authorization = `Token ${token}`;
     }
+    // Bypass Ngrok's free tier warning page for GET requests
+    config.headers['ngrok-skip-browser-warning'] = '69420';
     return config;
 });
 
