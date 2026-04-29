@@ -49,35 +49,62 @@ class ManimaticLogo(Scene):
         )
         self.wait(0.2)
         
-        # 4. Transform into the logo with a dynamic vector effect
-        # The text elegantly expands and fades out while the logo draws itself
+        # 4. Energy Orb / Black Hole Transition
+        orb = Dot(color=WHITE, radius=0.05)
+        orb.set_glow_factor = 2.0 # Pseudo-glow
+        
+        # Text gets sucked into the central orb
         self.play(
-            text.animate.scale(1.2).set_opacity(0),
-            Create(ma_logo),
-            run_time=1.5
+            ReplacementTransform(text, orb),
+            run_time=1.0,
+            rate_func=rate_functions.ease_in_expo
+        )
+        
+        # A quick bright pulse
+        self.play(
+            orb.animate.scale(5),
+            run_time=0.3,
+            rate_func=there_and_back
+        )
+        
+        # Orb explodes into the logo structure
+        self.play(
+            ReplacementTransform(orb, ma_logo),
+            run_time=1.2,
+            rate_func=rate_functions.ease_out_elastic
         )
         
         # 5. Final polish: a subtle pulse to indicate locking into place
         self.play(
-            ma_logo.animate.scale(1.05),
+            ma_logo.animate.set_stroke(width=thickness + 10),
             run_time=0.4,
             rate_func=there_and_back
         )
         self.wait(1.5)
         
         # 6. Smooth reverse to create a perfect loop
-        # We need a fresh text object for the reverse transform
         text_loop = Text("MANIMATIC", font="sans-serif", weight=BOLD, font_size=72)
         text_loop.set_color(WHITE)
         text_loop.arrange(RIGHT, buff=-0.1).move_to(ORIGIN)
         
-        # Pre-set it to the expanded, invisible state
-        text_loop.scale(1.2).set_opacity(0)
+        orb_loop = Dot(color=WHITE, radius=0.05)
         
         self.play(
-            Uncreate(ma_logo),
-            text_loop.animate.scale(1/1.2).set_opacity(1),
-            run_time=1.5
+            ReplacementTransform(ma_logo, orb_loop),
+            run_time=1.0,
+            rate_func=rate_functions.ease_in_expo
+        )
+        
+        self.play(
+            orb_loop.animate.scale(5),
+            run_time=0.3,
+            rate_func=there_and_back
+        )
+        
+        self.play(
+            ReplacementTransform(orb_loop, text_loop),
+            run_time=1.2,
+            rate_func=rate_functions.ease_out_elastic
         )
         
         self.play(
