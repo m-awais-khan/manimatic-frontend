@@ -14,6 +14,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
 
     const MODELS = [
         { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'Google' },
+        { id: 'groq-llama-3.3-70b-versatile', label: 'Llama 3.3 70B', provider: 'Groq (Fast)' },
         { id: 'custom-manim-model', label: 'Custom Manim Model', provider: 'Local/Colab' },
     ];
 
@@ -273,9 +274,9 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                disabled={isGenerating || selectedModel === 'custom-manim-model'}
+                                disabled={isGenerating || !selectedModel.startsWith('gemini')}
                                 className="p-3 mb-1.5 ml-1 text-[#a1a1aa] hover:text-white disabled:opacity-50 transition-colors"
-                                title={selectedModel === 'custom-manim-model' ? "Custom model doesn't support images" : "Attach image"}
+                                title={!selectedModel.startsWith('gemini') ? "This model doesn't support images" : "Attach image"}
                             >
                                 <Plus size={20} />
                             </button>
