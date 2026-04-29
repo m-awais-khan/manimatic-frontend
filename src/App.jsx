@@ -147,7 +147,9 @@ function App() {
             content: 'Generating animation...',
             sceneId: scene.id || scene._id,
             status: scene.status,
-            error_message: scene.error_message
+            error_message: scene.error_message,
+            video_path: scene.video_path,
+            code: scene.code
           });
         }
       });
@@ -267,7 +269,9 @@ function App() {
               content: 'Generating animation...',
               sceneId: scene.id || scene._id,
               status: scene.status,
-              error_message: scene.error_message
+              error_message: scene.error_message,
+              video_path: scene.video_path,
+              code: scene.code
             });
           }
         });
