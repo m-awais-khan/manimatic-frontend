@@ -45,31 +45,26 @@ class ManimaticLogo(Scene):
         # The letters squish together tightly in the center
         self.play(
             text.animate.arrange(RIGHT, buff=-0.1).move_to(ORIGIN),
-            run_time=1.2
+            run_time=1.0
         )
         self.wait(0.2)
         
-        # 4. Energy Orb / Black Hole Transition
-        orb = Dot(color=WHITE, radius=0.05)
-        orb.set_glow_factor = 2.0 # Pseudo-glow
-        
-        # Text gets sucked into the central orb
+        # 4. The "Line Crush" Transition
+        # Crush the text vertically until it becomes a thin bright line
         self.play(
-            ReplacementTransform(text, orb),
-            run_time=1.0,
-            rate_func=rate_functions.ease_in_expo
+            text.animate.stretch_to_fit_height(0.05),
+            run_time=0.8,
+            rate_func=rate_functions.ease_in_cubic
         )
         
-        # A quick bright pulse
-        self.play(
-            orb.animate.scale(5),
-            run_time=0.3,
-            rate_func=there_and_back
-        )
+        # Seamlessly swap the crushed text for an actual vector Line
+        flat_line = Line(text.get_left(), text.get_right(), color=WHITE, stroke_width=10)
+        self.add(flat_line)
+        self.remove(text)
         
-        # Orb explodes into the logo structure
+        # The line dynamically bends and transforms into the M/A logo
         self.play(
-            ReplacementTransform(orb, ma_logo),
+            ReplacementTransform(flat_line, ma_logo),
             run_time=1.2,
             rate_func=rate_functions.ease_out_elastic
         )
@@ -87,29 +82,31 @@ class ManimaticLogo(Scene):
         text_loop.set_color(WHITE)
         text_loop.arrange(RIGHT, buff=-0.1).move_to(ORIGIN)
         
-        orb_loop = Dot(color=WHITE, radius=0.05)
+        # Save original height before crushing
+        original_height = text_loop.height
+        text_loop.stretch_to_fit_height(0.05)
+        
+        flat_line_loop = Line(text_loop.get_left(), text_loop.get_right(), color=WHITE, stroke_width=10)
         
         self.play(
-            ReplacementTransform(ma_logo, orb_loop),
-            run_time=1.0,
-            rate_func=rate_functions.ease_in_expo
-        )
-        
-        self.play(
-            orb_loop.animate.scale(5),
-            run_time=0.3,
-            rate_func=there_and_back
-        )
-        
-        self.play(
-            ReplacementTransform(orb_loop, text_loop),
+            ReplacementTransform(ma_logo, flat_line_loop),
             run_time=1.2,
-            rate_func=rate_functions.ease_out_elastic
+            rate_func=rate_functions.ease_in_back
+        )
+        
+        self.add(text_loop)
+        self.remove(flat_line_loop)
+        
+        # Expand the text back to normal height
+        self.play(
+            text_loop.animate.stretch_to_fit_height(original_height),
+            run_time=0.8,
+            rate_func=rate_functions.ease_out_cubic
         )
         
         self.play(
             text_loop.animate.arrange(RIGHT, buff=0.2).move_to(ORIGIN),
-            run_time=1.2
+            run_time=1.0
         )
         
         # 7. Fade out gracefully
