@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Menu, PlaySquare, X, ChevronDown, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from './Logo';
+import ProcessingBlock from './ProcessingBlock';
 
 function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isSidebarOpen, toggleSidebar, hasCompletedScene, isPreviewOpen, togglePreview, onSceneClick, selectedModel, onModelChange }) {
     const [prompt, setPrompt] = useState('');
@@ -15,7 +16,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
     const MODELS = [
         { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'Google' },
         { id: 'groq-llama-3.3-70b-versatile', label: 'Llama 3.3 70B', provider: 'Groq (Fast)' },
-        { id: 'custom-manim-model', label: 'Custom Manim Model', provider: 'Local/Colab' },
+        { id: 'custom-manim-model', label: 'Custom Manim Model', provider: 'Manimatic' },
     ];
 
     const currentModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
@@ -126,12 +127,12 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                         >
                             <div className="flex flex-col items-center justify-center flex-1 space-y-4">
                                 <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-2xl">
-                                    <video 
-                                        src="/manimatic_logo_animation.mp4" 
-                                        autoPlay 
-                                        loop 
-                                        muted 
-                                        playsInline 
+                                    <video
+                                        src="/manimatic_logo_animation.mp4"
+                                        autoPlay
+                                        loop
+                                        muted
+                                        playsInline
                                         className="w-full h-auto object-cover"
                                     />
                                 </div>
@@ -145,46 +146,32 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                     key={index}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                    className="w-full flex flex-col items-center"
                                 >
-                                    {msg.role === 'assistant' && (
-                                        <div className="p-1.5 bg-white text-black rounded-lg shrink-0 border border-[#333333] shadow-md">
-                                            <Logo size={18} />
+                                    {msg.role === 'user' ? (
+                                        <div className="w-full max-w-3xl flex flex-col gap-3 my-4">
+                                            {msg.image && (
+                                                <div className="w-full">
+                                                    <img
+                                                        src={msg.image}
+                                                        alt="Attached"
+                                                        className="rounded-xl max-h-48 w-auto object-cover border border-[#333333]"
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="text-xl font-medium text-white tracking-tight leading-relaxed">
+                                                {msg.content}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="w-full max-w-4xl">
+                                            <ProcessingBlock 
+                                                msg={msg} 
+                                                model={currentModel.label} 
+                                                onSceneClick={onSceneClick} 
+                                            />
                                         </div>
                                     )}
-                                    <div
-                                        className={`px-4 py-3 rounded-2xl max-w-[80%] ${msg.role === 'user'
-                                            ? 'bg-white text-black rounded-br-sm'
-                                            : 'bg-[#111111] text-[#a1a1aa] border border-[#333333] rounded-bl-sm'
-                                            } ${msg.role === 'assistant' && msg.status === 'completed' ? 'cursor-pointer hover:ring-1 hover:ring-[#ededed] transition-shadow' : ''}`}
-                                        onClick={() => {
-                                            if (msg.role === 'assistant' && msg.status === 'completed' && msg.sceneId && onSceneClick) {
-                                                onSceneClick(msg.sceneId);
-                                            }
-                                        }}
-                                    >
-                                        {msg.image && (
-                                            <div className="mb-2 -mx-1 -mt-1">
-                                                <img
-                                                    src={msg.image}
-                                                    alt="Attached"
-                                                    className="rounded-xl max-h-48 w-auto object-cover border border-white/10"
-                                                />
-                                            </div>
-                                        )}
-                                        <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
-                                        {msg.status && (
-                                            <div className="mt-2 text-xs opacity-70 flex items-center gap-2">
-                                                {msg.status === 'pending' || msg.status === 'generating_code' || msg.status === 'rendering' ? (
-                                                    <span className="flex items-center gap-2"><div className="w-2 h-2 bg-white text-black rounded-full animate-pulse" /> {msg.status.replace('_', ' ')}...</span>
-                                                ) : msg.status === 'completed' ? (
-                                                    <span className="text-emerald-400">Generation Complete</span>
-                                                ) : (
-                                                    <span className="text-rose-400">Error: {msg.error_message || 'Unknown error'}</span>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
                                 </motion.div>
                             ))}
                         </div>
@@ -196,7 +183,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
             <div className={`p-4 ${isNewChat ? 'absolute bottom-8 left-0 right-0 max-w-3xl mx-auto' : 'border-t border-[#333333] bg-black '}`}>
                 <div className={isNewChat ? '' : 'max-w-3xl mx-auto'}>
                     <form onSubmit={handleSubmit} className="relative bg-[#111111] rounded-2xl border border-[#333333]  transition-shadow transition-colors focus-within:border-[#333333] focus-within:ring-1 focus-within:ring-[#ededed]">
-                        
+
                         {/* Model Selector inside Input Box */}
                         <div className="pt-2 px-3 pb-0" ref={modelDropdownRef}>
                             <button
