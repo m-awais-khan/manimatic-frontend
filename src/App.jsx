@@ -168,6 +168,15 @@ function App() {
         setActiveScene(null);
         setIsPreviewOpen(false);
       }
+
+      // Check if any scenes are still processing and resume polling
+      const activeScenes = data.scenes.filter(s => ['pending', 'generating_code', 'rendering'].includes(s.status));
+      if (activeScenes.length > 0) {
+        setIsGenerating(true);
+        startPolling(id);
+      } else {
+        setIsGenerating(false);
+      }
     } catch (error) {
       console.error("Failed to load chat details", error);
     }

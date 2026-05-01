@@ -143,7 +143,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                         <div className="max-w-3xl mx-auto space-y-6">
                             {chatHistory.map((msg, index) => (
                                 <motion.div
-                                    key={index}
+                                    key={currentChat ? `${currentChat}-${index}` : `new-${index}`}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className="w-full flex flex-col items-center"
