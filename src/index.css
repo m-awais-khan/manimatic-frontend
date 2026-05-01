@@ -19,16 +19,6 @@
     @apply bg-slate-900 text-slate-100 antialiased;
   }
 
-  /* ── Global Text Selection ── */
-  ::selection {
-    background-color: #3b82f6;
-    color: #ffffff;
-  }
-
-  ::-moz-selection {
-    background-color: #3b82f6;
-    color: #ffffff;
-  }
 
   /* Global Custom Scrollbar */
   ::-webkit-scrollbar {
@@ -69,4 +59,15 @@
     scrollbar-width: none;
     /* Firefox */
   }
+}
+
+/* ── Global Text Selection (Unscoped) ── */
+*::selection {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+*::-moz-selection {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
 }
