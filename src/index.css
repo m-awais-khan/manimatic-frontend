@@ -71,3 +71,21 @@
   background-color: #3b82f6 !important;
   color: #ffffff !important;
 }
+
+/* ── Global Clickable Elements Cursor ── */
+button, 
+a, 
+input[type="button"], 
+input[type="submit"], 
+input[type="reset"], 
+[role="button"] {
+  cursor: pointer !important;
+}
+
+button:disabled,
+input:disabled,
+a.disabled,
+[role="button"][aria-disabled="true"],
+button[disabled] {
+  cursor: not-allowed !important;
+}
