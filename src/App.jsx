@@ -5,12 +5,17 @@ import Workspace from './components/Workspace';
 import StitcherModal from './components/StitcherModal';
 import SettingsModal from './components/SettingsModal';
 import AuthPage from './components/AuthPage';
+import DatasetPage from './components/DatasetPage';
 import BlobVideo from './components/BlobVideo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download } from 'lucide-react';
-import { fetchChats, fetchChatDetails, generateScene, checkSceneStatus, deleteChat, fetchStitchedVideos, deleteStitchedVideo, googleAuth, wipeUserData, deleteAccount } from './api/client';
+import { fetchChats, fetchChatDetails, generateScene, checkSceneStatus, deleteChat, fetchStitchedVideos, deleteStitchedVideo, googleAuth, wipeUserData, deleteAccount, fetchSuggestions, createSceneFromDataset } from './api/client';
 
 function App() {
+  if (window.location.pathname === '/dataset') {
+    return <DatasetPage />;
+  }
+
   // Auth state
   const [authToken, setAuthToken] = useState(() => localStorage.getItem('manimatic_token'));
   const [userProfile, setUserProfile] = useState(() => {
@@ -39,6 +44,9 @@ function App() {
   const [resolution, setResolution] = useState(() => localStorage.getItem('manimatic_resolution') || '720p');
   const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
 
+  // Suggestion chips state
+  const [suggestions, setSuggestions] = useState([]);
+
   const pollIntervalRef = useRef(null);
 
   // Initial load — only when authenticated
@@ -46,6 +54,7 @@ function App() {
     if (authToken) {
       loadChats();
       loadStitchedVideos();
+      loadSuggestions();
     }
   }, [authToken]);
 
@@ -74,6 +83,7 @@ function App() {
     setActiveScene(null);
     setCurrentChatId(null);
     setStitchedVideos([]);
+    setSuggestions([]);
   };
 
   const handleWipeData = async () => {
@@ -99,22 +109,21 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    if (currentChatId) {
-      loadChatDetails(currentChatId);
-    } else {
-      setChatHistory([]);
-      setScenes([]);
-      setActiveScene(null);
-    }
-  }, [currentChatId]);
-
   const loadChats = async () => {
     try {
       const data = await fetchChats();
       setChats(data);
     } catch (error) {
       console.error("Failed to fetch chats", error);
+    }
+  };
+
+  const loadSuggestions = async () => {
+    try {
+      const data = await fetchSuggestions(4);
+      setSuggestions(data);
+    } catch (err) {
+      console.error('Failed to load suggestions', err);
     }
   };
 
@@ -126,6 +135,21 @@ function App() {
       console.error("Failed to fetch stitched videos", error);
     }
   };
+
+  // CRITICAL FIX: Clear stale data from the previous chat IMMEDIATELY (synchronously)
+  // before loadChatDetails runs asynchronously. Without this, ProcessingBlock mounts
+  // with the old chat's msg.status and permanently seeds the wrong logs — e.g.,
+  // Chat B's 'error' status bleeds into Chat A's engine display when switching chats.
+  useEffect(() => {
+    setChatHistory([]);
+    setScenes([]);
+    setActiveScene(null);
+    setIsPreviewOpen(false);
+
+    if (currentChatId) {
+      loadChatDetails(currentChatId);
+    }
+  }, [currentChatId]);
 
   const loadChatDetails = async (id) => {
     try {
@@ -191,6 +215,47 @@ function App() {
       }
     } catch (error) {
       console.error("Failed to delete chat", error);
+    }
+  };
+
+  // ── Suggestion chip handler ──────────────────────────────
+  const handleSuggestionClick = async (suggestion) => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+
+    // Show prompt in chat history immediately
+    setChatHistory([{ role: 'user', content: suggestion.instruction }]);
+
+    try {
+      const response = await createSceneFromDataset(suggestion.id);
+      const newScene = response.scene;
+      const newChatId = response.chat_id;
+
+      setCurrentChatId(newChatId);
+      setScenes([newScene]);
+      setActiveScene(newScene);
+      setIsPreviewOpen(true);
+      setIsGenerating(false);
+
+      // Add the completed assistant message
+      setChatHistory([
+        { role: 'user', content: suggestion.instruction },
+        {
+          role: 'assistant',
+          content: 'Animation ready from Manimatic dataset.',
+          sceneId: newScene.id,
+          status: 'completed',
+          video_path: newScene.video_path,
+          code: newScene.code,
+        },
+      ]);
+
+      loadChats();
+      loadSuggestions(); // refresh for next new chat
+    } catch (err) {
+      console.error('Suggestion scene creation failed', err);
+      setIsGenerating(false);
+      setChatHistory(prev => [...prev, { role: 'assistant', content: 'Failed to load this example.', status: 'error' }]);
     }
   };
 
@@ -260,7 +325,7 @@ function App() {
       try {
         const data = await fetchChatDetails(chatId);
 
-        const activeScenes = data.scenes.filter(s => s.status === 'pending' || s.status === 'generating_code' || s.status === 'rendering');
+        const activeScenes = data.scenes.filter(s => ['pending', 'generating_code', 'rendering'].includes(s.status));
 
         const history = [];
         data.scenes.forEach(scene => {
@@ -332,6 +397,7 @@ function App() {
             setIsGenerating(false);
           }
           setCurrentChatId(null);
+          loadSuggestions(); // pick fresh random suggestions for the new chat
         }}
         onDeleteChat={handleDeleteChat}
         onOpenStitcher={() => setIsStitcherOpen(true)}
@@ -363,11 +429,13 @@ function App() {
             const scene = scenes.find((s) => s.id === sceneId || s._id === sceneId);
             if (scene) {
               setActiveScene(scene);
-              setIsPreviewOpen(true);
+              setIsPreviewOpen(prev => !prev);
             }
           }}
           selectedModel={selectedModel}
           onModelChange={(m) => setSelectedModel(m)}
+          suggestions={suggestions}
+          onSuggestionClick={handleSuggestionClick}
         />
         <Workspace
           scenes={scenes}
@@ -378,11 +446,14 @@ function App() {
         />
       </main>
 
-      {/* Stitcher Modal */}
       <StitcherModal
         isOpen={isStitcherOpen}
         onClose={() => setIsStitcherOpen(false)}
-        onStitchComplete={() => {
+        onStitchComplete={(newStitch) => {
+          if (newStitch) {
+            // Instantly show the new stitched video as pending in the sidebar
+            setStitchedVideos(prev => [newStitch, ...prev]);
+          }
           const pollStitch = setInterval(async () => {
             try {
               const data = await fetchStitchedVideos();

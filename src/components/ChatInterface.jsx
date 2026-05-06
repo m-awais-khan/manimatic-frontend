@@ -1,17 +1,143 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Menu, PlaySquare, X, ChevronDown, Plus } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Send, Menu, PlaySquare, X, ChevronDown, Plus, Sparkles, Wand2, Check, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from './Logo';
 import ProcessingBlock from './ProcessingBlock';
+import { enhancePrompt } from '../api/client';
 
-function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isSidebarOpen, toggleSidebar, hasCompletedScene, isPreviewOpen, togglePreview, onSceneClick, selectedModel, onModelChange }) {
+/* ── Suggestion Chip ──────────────────────────────────────────
+   Shows a fixed-height truncated card. On hover a floating panel
+   appears beside it (via React portal) showing the full instruction
+   — the chip itself never resizes.
+*/
+const PREVIEW_LEN = 88;
+const POPOVER_W   = 300;
+
+function SuggestionChip({ s, index, isGenerating, onSuggestionClick }) {
+    const [hovered, setHovered]       = useState(false);
+    const [popoverStyle, setPopoverStyle] = useState({});
+    const btnRef = useRef(null);
+    const isLong = s.instruction.length > PREVIEW_LEN;
+
+    const handleMouseEnter = () => {
+        if (btnRef.current && isLong) {
+            const rect = btnRef.current.getBoundingClientRect();
+            const GAP  = 14;
+            const vw   = window.innerWidth;
+            const vh   = window.innerHeight;
+
+            // Prefer right side; flip left if not enough room
+            let left = rect.right + GAP;
+            if (left + POPOVER_W > vw - 16) {
+                left = rect.left - POPOVER_W - GAP;
+            }
+
+            // Clamp vertically so panel never clips bottom of viewport
+            let top = rect.top;
+            const estimatedH = 160; // conservative estimate
+            if (top + estimatedH > vh - 16) {
+                top = vh - estimatedH - 16;
+            }
+
+            setPopoverStyle({ top, left, width: POPOVER_W });
+        }
+        setHovered(true);
+    };
+
+    const handleMouseLeave = () => setHovered(false);
+
+    return (
+        <>
+            {/* ── The chip itself ── fixed height, never grows ── */}
+            <motion.button
+                ref={btnRef}
+                id={`suggestion-${s.id}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.07, duration: 0.25 }}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onClick={() => onSuggestionClick && onSuggestionClick(s)}
+                disabled={isGenerating}
+                className={`flex flex-col items-start text-left px-4 py-3 rounded-xl border w-full
+                    transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed
+                    ${
+                        hovered
+                            ? 'border-[#444444] bg-[#111111]'
+                            : 'border-[#222222] bg-[#0d0d0d]'
+                    }`}
+            >
+                <p className={`text-sm leading-snug line-clamp-2 transition-colors duration-150 ${
+                    hovered ? 'text-white' : 'text-[#d4d4d8]'
+                }`}>
+                    {isLong
+                        ? s.instruction.slice(0, PREVIEW_LEN - 3) + '…'
+                        : s.instruction}
+                </p>
+            </motion.button>
+
+            {/* ── Floating full-prompt panel ── portal so it escapes any overflow */}
+            {isLong && createPortal(
+                <AnimatePresence>
+                    {hovered && (
+                        <motion.div
+                            initial={{ opacity: 0, x: -8, scale: 0.97 }}
+                            animate={{ opacity: 1, x: 0,  scale: 1    }}
+                            exit={{    opacity: 0, x: -8, scale: 0.97 }}
+                            transition={{ duration: 0.15, ease: 'easeOut' }}
+                            style={{ position: 'fixed', zIndex: 9999, ...popoverStyle }}
+                            className="pointer-events-none rounded-xl border border-[#333333]
+                                bg-[#0d0d0d] shadow-2xl shadow-black/70 p-4"
+                        >
+                            <p className="text-[10px] font-semibold text-[#71717a] uppercase tracking-widest mb-2">
+                                Full prompt
+                            </p>
+                            <p className="text-sm text-[#e4e4e7] leading-relaxed">
+                                {s.instruction}
+                            </p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
+        </>
+    );
+}
+
+function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isSidebarOpen, toggleSidebar, hasCompletedScene, isPreviewOpen, togglePreview, onSceneClick, selectedModel, onModelChange, suggestions = [], onSuggestionClick }) {
     const [prompt, setPrompt] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+    const [isEnhancing, setIsEnhancing] = useState(false);
+    const [suggestedPrompt, setSuggestedPrompt] = useState(null);
     const textareaRef = useRef(null);
     const fileInputRef = useRef(null);
     const modelDropdownRef = useRef(null);
+
+    const handleEnhance = async () => {
+        if (!prompt.trim() || isEnhancing) return;
+        setIsEnhancing(true);
+        setSuggestedPrompt(null);
+        try {
+            const data = await enhancePrompt(prompt.trim());
+            setSuggestedPrompt(data.enhanced_prompt);
+        } catch (err) {
+            console.error('Enhance failed:', err);
+        } finally {
+            setIsEnhancing(false);
+        }
+    };
+
+    const handleApplySuggestion = () => {
+        setPrompt(suggestedPrompt);
+        setSuggestedPrompt(null);
+    };
+
+    const handleDiscardSuggestion = () => {
+        setSuggestedPrompt(null);
+    };
 
     const MODELS = [
         { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'Google' },
@@ -56,7 +182,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if ((prompt.trim() || selectedImage) && !isGenerating) {
+        if ((prompt.trim() || selectedImage) && !isGenerating && !isEnhancing) {
             onGenerate(prompt, selectedImage);
             setPrompt('');
             clearImage();
@@ -86,7 +212,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
     const isNewChat = !currentChat;
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-black relative">
+        <div className="flex-1 flex flex-col h-full bg-black relative min-w-[350px]">
             {/* Toggle Sidebar Button */}
             {!isSidebarOpen && (
                 <div className="absolute top-4 left-4 z-10">
@@ -137,6 +263,27 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                     />
                                 </div>
                                 <h1 className="text-2xl font-semibold text-white">How can I help you animate?</h1>
+
+                                {/* Suggestion Chips */}
+                                {suggestions.length > 0 && (
+                                    <div className="w-full max-w-2xl mt-2">
+                                        <div className="flex items-center gap-1.5 mb-3">
+                                            <Sparkles size={13} className="text-[#71717a]" />
+                                            <span className="text-xs text-[#71717a] font-medium uppercase tracking-wider">Try an example</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            {suggestions.map((s, i) => (
+                                                <SuggestionChip
+                                                    key={s.id}
+                                                    s={s}
+                                                    index={i}
+                                                    isGenerating={isGenerating}
+                                                    onSuggestionClick={onSuggestionClick}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>    <p className="text-[#a1a1aa]">Describe what you want to see, and I'll generate the Manim code.</p>
                         </motion.div>
                     ) : (
@@ -159,7 +306,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                                     />
                                                 </div>
                                             )}
-                                            <div className="text-xl font-medium text-white tracking-tight leading-relaxed">
+                                            <div className="text-base text-white tracking-tight leading-relaxed">
                                                 {msg.content}
                                             </div>
                                         </div>
@@ -169,6 +316,7 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                                 msg={msg} 
                                                 model={currentModel.label} 
                                                 onSceneClick={onSceneClick} 
+                                                isPreviewOpen={isPreviewOpen}
                                             />
                                         </div>
                                     )}
@@ -247,6 +395,43 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             </div>
                         )}
 
+                        {/* Enhance Prompt Suggestion Popover */}
+                        <AnimatePresence>
+                            {suggestedPrompt && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute bottom-full mb-3 left-0 right-0 z-30"
+                                >
+                                    <div className="bg-[#111111] border border-[#3f3f46] rounded-2xl p-4 shadow-2xl">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Wand2 size={13} className="text-white shrink-0" />
+                                            <span className="text-[10px] font-mono uppercase tracking-widest text-white">Enhanced Prompt</span>
+                                        </div>
+                                        <p className="text-sm text-[#e4e4e7] leading-relaxed mb-3">{suggestedPrompt}</p>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={handleApplySuggestion}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#e5e5e5] text-black text-xs font-medium rounded-lg transition-colors"
+                                            >
+                                                <Check size={12} /> Apply
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleDiscardSuggestion}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#222222] hover:bg-[#333333] border border-[#444444] text-[#a1a1aa] text-xs font-medium rounded-lg transition-colors"
+                                            >
+                                                <X size={12} /> Discard
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
                         <div className="flex items-end">
                             {/* Hidden File Input */}
                             <input
@@ -284,13 +469,28 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                 rows="1"
                             />
 
+                            {/* Enhance Button */}
+                            {prompt.trim() && (
+                                <button
+                                    type="button"
+                                    onClick={handleEnhance}
+                                    disabled={isEnhancing || isGenerating}
+                                    className="m-3 p-2 text-[#a1a1aa] hover:text-white hover:bg-[#27272a] border border-transparent hover:border-[#333333] disabled:opacity-40 rounded-xl transition-all"
+                                    title="Enhance prompt with AI"
+                                >
+                                    {isEnhancing
+                                        ? <Loader2 size={18} className="animate-spin" />
+                                        : <Wand2 size={18} />}
+                                </button>
+                            )}
+
                             {/* Send Button */}
                             <button
                                 type="submit"
-                                disabled={(!prompt.trim() && !selectedImage) || isGenerating}
+                                disabled={(!prompt.trim() && !selectedImage) || isGenerating || isEnhancing}
                                 className="m-3 p-2 bg-white hover:bg-[#e5e5e5] disabled:bg-[#27272a] disabled:text-[#71717a] text-black rounded-xl transition-colors"
                             >
-                                <Send size={18} className={(prompt.trim() || selectedImage) && !isGenerating ? 'translate-x-0.5 -translate-y-0.5 transition-transform' : ''} />
+                                <Send size={18} className={(prompt.trim() || selectedImage) && !isGenerating && !isEnhancing ? 'translate-x-0.5 -translate-y-0.5 transition-transform' : ''} />
                             </button>
                         </div>
                     </form>

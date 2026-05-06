@@ -5,8 +5,8 @@ import { PlaySquare, X, ChevronDown, ChevronRight, Code2, Copy, Check } from 'lu
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-const SceneContainer = ({ scene, isLatest }) => {
-    const [isOpen, setIsOpen] = useState(isLatest);
+const SceneContainer = ({ scene, isActive }) => {
+    const [isOpen, setIsOpen] = useState(isActive);
     const [isCodeOpen, setIsCodeOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
 
@@ -20,29 +20,25 @@ const SceneContainer = ({ scene, isLatest }) => {
         }
     };
 
-    // Auto-collapse this container if a newer scene finishes generating
+    // Expand or collapse based on active status
     useEffect(() => {
-        if (!isLatest) {
-            setIsOpen(false);
-        } else {
-            setIsOpen(true);
-        }
-    }, [isLatest]);
+        setIsOpen(isActive);
+    }, [isActive]);
 
     return (
-        <div className="bg-[#111111] border border-[#333333] rounded-2xl overflow-hidden  transition-all duration-300">
+        <div id={`scene-container-${scene.id || scene._id}`} className="bg-[#111111] border border-[#333333] rounded-2xl overflow-hidden  transition-all duration-300">
             {/* Header / Toggle */}
             <div
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-[#111111] transition-colors"
             >
-                <div className="flex items-center gap-4 overflow-hidden">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="p-2 bg-[#222222] text-[#ededed] rounded-lg shrink-0">
                         <PlaySquare size={16} className="text-white" />
                     </div>
-                    <div className="flex flex-col truncate">
-                        <span className="text-[10px] text-[#71717a] font-medium uppercase tracking-wider mb-0.5">User Prompt</span>
-                        <span className="text-sm font-semibold text-[#a1a1aa] truncate">{scene.prompt}</span>
+                    <div className="flex flex-col flex-1 min-w-0">
+                        <span className="text-[10px] text-[#71717a] font-medium uppercase tracking-wider mb-0.5 shrink-0">User Prompt</span>
+                        <span className="text-sm font-semibold text-[#a1a1aa] truncate block w-full">{scene.prompt}</span>
                     </div>
                     {scene.reference_image && (
                         <img
@@ -144,13 +140,54 @@ const SceneContainer = ({ scene, isLatest }) => {
 
 function Workspace({ scenes, activeScene, isSidebarOpen, isPreviewOpen, closePreview }) {
     const scrollRef = useRef(null);
+    const [workspaceWidth, setWorkspaceWidth] = useState(60);
+    const [isDragging, setIsDragging] = useState(false);
 
-    // Auto scroll to bottom when new scenes are added
+    // Auto scroll to the active scene when opened or when active scene changes
     useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        if (isPreviewOpen && activeScene && scrollRef.current) {
+            // Small timeout to ensure DOM has rendered the expansion before scrolling
+            setTimeout(() => {
+                const el = document.getElementById(`scene-container-${activeScene.id || activeScene._id}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 150);
         }
-    }, [scenes, isPreviewOpen]);
+    }, [activeScene, isPreviewOpen, scenes.length]);
+
+    // Resizing logic
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            if (!isDragging) return;
+            // Calculate width as percentage of window width from the right edge
+            const newWidth = ((window.innerWidth - e.clientX) / window.innerWidth) * 100;
+            // Min 30%, Max 65%
+            const clamped = Math.max(30, Math.min(newWidth, 65));
+            setWorkspaceWidth(clamped);
+        };
+        const handleMouseUp = () => {
+            setIsDragging(false);
+            document.body.style.cursor = 'default';
+        };
+
+        if (isDragging) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'col-resize';
+        }
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'default';
+        };
+    }, [isDragging]);
+
+    const handleMouseDown = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
 
     if (!scenes || scenes.length === 0) return null;
 
@@ -161,11 +198,17 @@ function Workspace({ scenes, activeScene, isSidebarOpen, isPreviewOpen, closePre
             {isPreviewOpen && displayScenes.length > 0 && (
                 <motion.div
                     initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: isSidebarOpen ? '55%' : '65%', opacity: 1 }}
+                    animate={{ width: `${workspaceWidth}%`, opacity: 1 }}
                     exit={{ width: 0, opacity: 0 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="h-full border-l border-[#333333] bg-[#0a0a0a] flex flex-col overflow-hidden shrink-0 "
+                    transition={isDragging ? { duration: 0 } : { duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full border-l border-[#333333] bg-[#0a0a0a] flex flex-col overflow-hidden shrink-0 relative"
                 >
+                    {/* Drag Handle */}
+                    <div 
+                        onMouseDown={handleMouseDown}
+                        className="absolute left-0 top-0 bottom-0 w-2 -ml-1 cursor-col-resize z-50 hover:bg-[#a1a1aa]/30 active:bg-[#a1a1aa]/50 transition-colors"
+                    />
+
                     {/* Header Fixed */}
                     <div className="flex items-center justify-between p-5 border-b border-[#333333] bg-[#0a0a0a]  z-10 shrink-0 shadow-sm">
                         <div className="flex items-center gap-3">
@@ -183,9 +226,9 @@ function Workspace({ scenes, activeScene, isSidebarOpen, isPreviewOpen, closePre
                     <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth bg-[#0a0a0a]">
                         {displayScenes.map((scene, index) => (
                             <SceneContainer
-                                key={scene.id}
+                                key={scene.id || scene._id}
                                 scene={scene}
-                                isLatest={index === displayScenes.length - 1}
+                                isActive={activeScene ? ((scene.id || scene._id) === (activeScene.id || activeScene._id)) : (index === displayScenes.length - 1)}
                             />
                         ))}
                     </div>

@@ -100,9 +100,8 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
         try {
             const paths = selectedVideos.map(v => v.video_path);
             const title = stitchTitle.trim() || `Stitched ${new Date().toLocaleString()}`;
-            await createStitch(paths, title, transition);
-            if (onStitchComplete) onStitchComplete();
-            onClose();
+            const newStitch = await createStitch(paths, title, transition);
+            if (onStitchComplete) onStitchComplete(newStitch);
         } catch (err) {
             console.error("Stitch failed", err);
         } finally {
@@ -279,10 +278,10 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                             <X size={14} />
                                         </button>
                                     </div>
-                                    <BlobVideo 
-                                        url={previewVideo} 
-                                        className="w-full rounded-lg border border-[#333333] bg-black" 
-                                        style={{ maxHeight: '180px' }} 
+                                    <BlobVideo
+                                        url={previewVideo}
+                                        className="w-full rounded-lg border border-[#333333] bg-black"
+                                        style={{ maxHeight: '180px' }}
                                     />
                                 </div>
                             )}
@@ -371,8 +370,8 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                                 key={t.id}
                                                 onClick={() => setTransition(t.id)}
                                                 className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${transition === t.id
-                                                        ? 'bg-white text-black border-white ring-1 ring-white/30'
-                                                        : 'bg-[#111111] border-[#333333] text-[#a1a1aa] hover:text-white hover:bg-[#27272a]'
+                                                    ? 'bg-white text-black border-white ring-1 ring-white/30'
+                                                    : 'bg-[#111111] border-[#333333] text-[#a1a1aa] hover:text-white hover:bg-[#27272a]'
                                                     }`}
                                                 title={t.desc}
                                             >

@@ -41,6 +41,17 @@ export const deleteAccount = async () => {
     return response.data;
 };
 
+export const fetchTrainingConsent = async () => {
+    const response = await api.get('auth/training-consent/');
+    return response.data; // { consented: true | false }
+};
+
+export const updateTrainingConsent = async (consented) => {
+    const response = await api.post('auth/training-consent/', { consented });
+    return response.data; // { consented: bool, action: string }
+};
+
+
 // ── Scene API ─────────────────────────────────────────────
 
 export const generateScene = async (data) => {
@@ -92,4 +103,23 @@ export const fetchStitchedVideoDetail = async (id) => {
 export const deleteStitchedVideo = async (id) => {
     const response = await api.delete(`stitched/${id}/`);
     return response.data;
+};
+
+// ── Dataset Suggestions API ───────────────────────────────
+
+export const fetchSuggestions = async (count = 4) => {
+    const response = await api.get(`suggestions/?count=${count}`);
+    return response.data; // [{ id, instruction, category, complexity, video_path }]
+};
+
+export const createSceneFromDataset = async (datasetId) => {
+    const response = await api.post('scenes/from-dataset/', { dataset_id: datasetId });
+    return response.data; // { scene, chat_id } — same shape as generateScene
+};
+
+// ── Prompt Enhancement API ────────────────────────────────
+
+export const enhancePrompt = async (rawPrompt) => {
+    const response = await api.post('enhance-prompt/', { prompt: rawPrompt });
+    return response.data; // { enhanced_prompt: "..." }
 };

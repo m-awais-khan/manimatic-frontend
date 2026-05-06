@@ -1,15 +1,57 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, Code2, Layers, AlertTriangle, CheckCircle2, PlaySquare, ChevronRight } from 'lucide-react';
+import { Terminal, Code2, Layers, AlertTriangle, CheckCircle2, PlaySquare, ChevronRight, X } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import VideoPlayer from './VideoPlayer';
 
-const ProcessingBlock = ({ msg, model, onSceneClick }) => {
-    const [logs, setLogs] = useState([{ text: 'Initializing engine...', type: 'info', id: 0 }]);
+const ProcessingBlock = ({ msg, model, onSceneClick, isPreviewOpen }) => {
+    const [activeTab, setActiveTab] = useState('logs');
+
+    // Seed initial logs based on what the server says the status is when first mounted.
+    // This means if we switch back to a chat mid-render, we see a useful state, not a blank "Initializing".
+    const getInitialLogs = (status) => {
+        if (status === 'rendering') {
+            return [
+                { text: 'Initializing engine...', type: 'info', id: 0 },
+                { text: `Generating Manim code with ${model}...`, type: 'info', id: 1 },
+                { text: 'Code generation successful.', type: 'success', id: 2 },
+                { text: 'Compiling Manim animation engine...', type: 'info', id: 3 },
+                { text: 'Rendering video frames (This may take a minute)...', type: 'info', id: 4 },
+            ];
+        } else if (status === 'generating_code') {
+            if (msg.code) {
+                // If code exists, we are in the self-healing retry loop!
+                return [
+                    { text: 'Initializing engine...', type: 'info', id: 0 },
+                    { text: `Generating Manim code with ${model}...`, type: 'info', id: 1 },
+                    { text: 'Code generation successful.', type: 'success', id: 2 },
+                    { text: 'Compiling Manim animation engine...', type: 'info', id: 3 },
+                    { text: 'Rendering video frames (This may take a minute)...', type: 'info', id: 4 },
+                    { text: '⚠️ Execution failed! Syntax or Runtime error detected.', type: 'error', id: 5 },
+                    { text: `Initiating Self-Healing Agent Loop...`, type: 'warning', id: 6 },
+                    { text: `Analyzing error and regenerating code with ${model}...`, type: 'info', id: 7 },
+                ];
+            } else {
+                return [
+                    { text: 'Initializing engine...', type: 'info', id: 0 },
+                    { text: `Generating Manim code with ${model}...`, type: 'info', id: 1 },
+                ];
+            }
+        } else if (status === 'error') {
+            return [
+                { text: 'Initializing engine...', type: 'info', id: 0 },
+                { text: 'An error occurred during generation.', type: 'error', id: 1 },
+                { text: msg.error_message || 'Generation failed after multiple attempts.', type: 'error', id: 2 },
+            ];
+        }
+        return [{ text: 'Initializing engine...', type: 'info', id: 0 }];
+    };
+
+    const [logs, setLogs] = useState(() => getInitialLogs(msg.status));
     const [healCount, setHealCount] = useState(0);
     const prevStatusRef = useRef(msg.status);
-    const logCounter = useRef(1);
+    const logCounter = useRef(10); // Start high to avoid id collisions with seeded logs
 
     const addLog = (text, type) => {
         setLogs(prev => [...prev, { text, type, id: logCounter.current++ }]);
@@ -38,14 +80,14 @@ const ProcessingBlock = ({ msg, model, onSceneClick }) => {
                 addLog('Rendering video frames (This may take a minute)...', 'info');
             } else if (status === 'completed') {
                 addLog('Render complete! Video compiled successfully.', 'success');
-            } else if (status === 'failed') {
-                addLog(`Fatal Error: ${msg.error_message}`, 'error');
+            } else if (status === 'error' || status === 'failed') {
+                addLog(`Fatal Error: ${msg.error_message || 'Generation failed.'}`, 'error');
             }
             prevStatusRef.current = status;
         }
     }, [msg.status, healCount, model, msg.error_message]);
 
-    const isProcessing = msg.status !== 'completed' && msg.status !== 'failed';
+    const isProcessing = msg.status !== 'completed' && msg.status !== 'error' && msg.status !== 'failed';
     const isRendering = msg.status === 'rendering';
 
     if (msg.status === 'completed') {
@@ -81,10 +123,14 @@ const ProcessingBlock = ({ msg, model, onSceneClick }) => {
                             {msg.sceneId && onSceneClick && (
                                 <button
                                     onClick={() => onSceneClick(msg.sceneId)}
-                                    className="flex items-center gap-2 text-xs font-medium text-white bg-[#222222] hover:bg-[#333333] px-4 py-1.5 rounded-lg border border-[#444444] transition-colors shadow-sm"
+                                    className={`flex items-center gap-1.5 text-[10px] font-medium text-white px-2.5 py-1 rounded-md border transition-colors shadow-sm whitespace-nowrap ${
+                                        isPreviewOpen 
+                                            ? 'bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 text-rose-200'
+                                            : 'bg-[#222222] hover:bg-[#333333] border-[#444444]'
+                                    }`}
                                 >
-                                    <PlaySquare size={14} />
-                                    Open in Workspace
+                                    {isPreviewOpen ? <X size={12} /> : <PlaySquare size={12} />}
+                                    {isPreviewOpen ? 'Close Workspace' : 'Open in Workspace'}
                                 </button>
                             )}
                         </div>
@@ -149,33 +195,80 @@ const ProcessingBlock = ({ msg, model, onSceneClick }) => {
                 </div>
 
                 {/* Terminal Logs Area */}
-                <div className="bg-[#050505] border border-[#222222] rounded-xl p-4 font-mono text-xs overflow-y-auto max-h-[300px] flex flex-col gap-2">
-                    <AnimatePresence initial={false}>
-                        {logs.map((log) => (
-                            <motion.div
-                                key={log.id}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className={`flex items-start gap-2 ${
-                                    log.type === 'error' ? 'text-rose-400' :
-                                    log.type === 'warning' ? 'text-amber-400' :
-                                    log.type === 'success' ? 'text-emerald-400' :
-                                    'text-[#a1a1aa]'
-                                }`}
+                <div className="bg-[#050505] border border-[#222222] rounded-xl overflow-hidden max-h-[300px] flex flex-col">
+                    {/* Terminal Tabs */}
+                    <div className="flex border-b border-[#222222] bg-[#0a0a0a] shrink-0 overflow-x-auto no-scrollbar">
+                        <button 
+                            onClick={() => setActiveTab('logs')} 
+                            className={`px-4 py-2 text-[10px] font-mono tracking-widest uppercase transition-colors whitespace-nowrap ${activeTab === 'logs' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-[#111111]' : 'text-[#71717a] hover:text-[#a1a1aa] hover:bg-[#111111]'}`}
+                        >
+                            Status
+                        </button>
+                        {msg.code && (
+                            <button 
+                                onClick={() => setActiveTab('code')} 
+                                className={`px-4 py-2 text-[10px] font-mono tracking-widest uppercase transition-colors whitespace-nowrap ${activeTab === 'code' ? 'text-blue-400 border-b-2 border-blue-400 bg-[#111111]' : 'text-[#71717a] hover:text-[#a1a1aa] hover:bg-[#111111]'}`}
                             >
-                                <ChevronRight size={14} className="shrink-0 mt-0.5 opacity-50" />
-                                <span className="leading-relaxed">{log.text}</span>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                    {isProcessing && (
-                        <motion.div 
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: [0, 1, 0] }} 
-                            transition={{ repeat: Infinity, duration: 1 }}
-                            className="w-2 h-4 bg-[#a1a1aa] ml-6 mt-1"
-                        />
-                    )}
+                                Source Code
+                            </button>
+                        )}
+                        {msg.error_message && (
+                            <button 
+                                onClick={() => setActiveTab('error')} 
+                                className={`px-4 py-2 text-[10px] font-mono tracking-widest uppercase transition-colors whitespace-nowrap ${activeTab === 'error' ? 'text-rose-400 border-b-2 border-rose-400 bg-[#111111]' : 'text-[#71717a] hover:text-[#a1a1aa] hover:bg-[#111111]'}`}
+                            >
+                                Compiler Trace
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Terminal Content */}
+                    <div className="p-4 font-mono text-xs overflow-y-auto flex-1 flex flex-col gap-2 relative">
+                        {activeTab === 'logs' && (
+                            <>
+                                <AnimatePresence initial={false}>
+                                    {logs.map((log) => (
+                                        <motion.div
+                                            key={log.id}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            className={`flex items-start gap-2 ${
+                                                log.type === 'error' ? 'text-rose-400' :
+                                                log.type === 'warning' ? 'text-amber-400' :
+                                                log.type === 'success' ? 'text-emerald-400' :
+                                                'text-[#a1a1aa]'
+                                            }`}
+                                        >
+                                            <ChevronRight size={14} className="shrink-0 mt-0.5 opacity-50" />
+                                            <span className="leading-relaxed">{log.text}</span>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                                {isProcessing && (
+                                    <motion.div 
+                                        initial={{ opacity: 0 }} 
+                                        animate={{ opacity: [0, 1, 0] }} 
+                                        transition={{ repeat: Infinity, duration: 1 }}
+                                        className="w-2 h-4 bg-[#a1a1aa] ml-6 mt-1"
+                                    />
+                                )}
+                            </>
+                        )}
+
+                        {activeTab === 'code' && (
+                            <div className="w-full text-[10px] leading-snug">
+                                <SyntaxHighlighter language="python" style={vscDarkPlus} customStyle={{ margin: 0, padding: 0, background: 'transparent' }} className="no-scrollbar">
+                                    {msg.code}
+                                </SyntaxHighlighter>
+                            </div>
+                        )}
+
+                        {activeTab === 'error' && (
+                            <div className="w-full text-[10px] leading-relaxed text-rose-400 whitespace-pre-wrap">
+                                {msg.error_message}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
