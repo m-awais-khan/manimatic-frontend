@@ -20,6 +20,11 @@ __pycache__/
 *.py[cod]
 media/
 theme_converter.py
+
+# Large dataset assets (tracked separately, not via git)
+public/dataset-videos/
+public/manim-dataset-viewer.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
