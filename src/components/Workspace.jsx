@@ -191,7 +191,9 @@ function Workspace({ scenes, activeScene, isSidebarOpen, isPreviewOpen, closePre
 
     if (!scenes || scenes.length === 0) return null;
 
-    const displayScenes = scenes.filter(s => s.status === 'completed' && !s.text_response);
+    // Filter for scenes that have code (animations). 
+    // We check for s.code because text_response is now used for AI explanations in animation scenes too.
+    const displayScenes = scenes.filter(s => s.status === 'completed' && s.code);
 
     return (
         <AnimatePresence>

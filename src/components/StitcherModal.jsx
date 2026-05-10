@@ -5,7 +5,7 @@ import { fetchChats, fetchChatDetails, createStitch, fetchStitchedVideos } from 
 import Logo from './Logo';
 import BlobVideo from './BlobVideo';
 
-function StitcherModal({ isOpen, onClose, onStitchComplete }) {
+function StitcherModal({ isOpen, onClose, onStitchComplete, activeProjectId }) {
     const [chats, setChats] = useState([]);
     const [stitchedVideos, setStitchedVideos] = useState([]);
     const [expandedChat, setExpandedChat] = useState(null);
@@ -28,20 +28,20 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
     ];
 
     useEffect(() => {
-        if (isOpen) {
-            loadSources();
+        if (isOpen && activeProjectId) {
+            loadSources(activeProjectId);
             setSelectedVideos([]);
             setPreviewVideo(null);
             setStitchTitle('');
             setTransition('cut');
         }
-    }, [isOpen]);
+    }, [isOpen, activeProjectId]);
 
-    const loadSources = async () => {
+    const loadSources = async (projectId) => {
         try {
             const [chatData, stitchedData] = await Promise.all([
-                fetchChats(),
-                fetchStitchedVideos()
+                fetchChats(projectId),
+                fetchStitchedVideos(projectId)
             ]);
             setChats(chatData);
             setStitchedVideos(stitchedData.filter(s => s.status === 'completed'));
@@ -70,7 +70,6 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
     };
 
     const addVideo = (video) => {
-        // Prevent duplicate by checking path
         const key = video.video_path;
         setSelectedVideos(prev => [...prev, {
             id: `${key}_${Date.now()}`,
@@ -95,12 +94,12 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
     };
 
     const handleStitch = async () => {
-        if (selectedVideos.length < 2) return;
+        if (selectedVideos.length < 2 || !activeProjectId) return;
         setIsStitching(true);
         try {
             const paths = selectedVideos.map(v => v.video_path);
             const title = stitchTitle.trim() || `Stitched ${new Date().toLocaleString()}`;
-            const newStitch = await createStitch(paths, title, transition);
+            const newStitch = await createStitch(activeProjectId, paths, title, transition);
             if (onStitchComplete) onStitchComplete(newStitch);
         } catch (err) {
             console.error("Stitch failed", err);
@@ -128,7 +127,6 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                     className="bg-[#0a0a0a] border border-[#333333] rounded-2xl  w-full max-w-5xl h-[80vh] flex flex-col overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* Header */}
                     <div className="flex items-center justify-between px-6 py-4 border-b border-[#333333] bg-[#0a0a0a] shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-[#222222] text-[#ededed] rounded-lg border border-purple-500/20">
@@ -141,15 +139,12 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                         </button>
                     </div>
 
-                    {/* Body */}
                     <div className="flex flex-1 overflow-hidden">
-                        {/* Left Panel — Source Browser */}
                         <div className="w-1/2 border-r border-[#333333] flex flex-col overflow-hidden">
                             <div className="px-4 py-3 border-b border-[#333333] shrink-0">
                                 <h3 className="text-sm font-semibold text-[#a1a1aa] uppercase tracking-wider">Available Videos</h3>
                             </div>
                             <div className="flex-1 overflow-y-auto p-3 space-y-1">
-                                {/* Chat Sections */}
                                 {chats.map(chat => (
                                     <div key={chat.id} className="rounded-xl overflow-hidden">
                                         <button
@@ -213,7 +208,6 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                     </div>
                                 ))}
 
-                                {/* Stitched Videos Section */}
                                 {stitchedVideos.length > 0 && (
                                     <div className="mt-4 pt-4 border-t border-[#333333]">
                                         <button
@@ -269,7 +263,6 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                 )}
                             </div>
 
-                            {/* Preview Player */}
                             {previewVideo && (
                                 <div className="border-t border-[#333333] p-3 shrink-0 bg-black">
                                     <div className="flex items-center justify-between mb-2">
@@ -287,7 +280,6 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                             )}
                         </div>
 
-                        {/* Right Panel — Selection Queue */}
                         <div className="w-1/2 flex flex-col overflow-hidden">
                             <div className="px-4 py-3 border-b border-[#333333] shrink-0 flex items-center justify-between">
                                 <h3 className="text-sm font-semibold text-[#a1a1aa] uppercase tracking-wider">
@@ -351,7 +343,6 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                 )}
                             </div>
 
-                            {/* Stitch Controls */}
                             <div className="border-t border-[#333333] p-4 space-y-3 shrink-0 bg-[#0a0a0a]">
                                 <input
                                     type="text"
@@ -361,7 +352,6 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
                                     className="w-full px-3 py-2 bg-[#111111] border border-[#333333] rounded-lg text-sm text-[#a1a1aa] placeholder-slate-500 focus:outline-none focus:border-[#666666] focus:ring-1 focus:ring-[#666666]"
                                 />
 
-                                {/* Transition Selector */}
                                 <div>
                                     <span className="text-[10px] text-[#71717a] font-semibold uppercase tracking-wider mb-1.5 block">Transition</span>
                                     <div className="flex flex-wrap gap-1.5">
@@ -383,7 +373,7 @@ function StitcherModal({ isOpen, onClose, onStitchComplete }) {
 
                                 <button
                                     onClick={handleStitch}
-                                    disabled={selectedVideos.length < 2 || isStitching}
+                                    disabled={selectedVideos.length < 2 || isStitching || !activeProjectId}
                                     className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black hover:bg-[#e5e5e5] disabled:bg-[#27272a] disabled:text-[#71717a] rounded-xl text-sm font-medium transition-colors border border-[#333333]"
                                 >
                                     <Scissors size={16} />

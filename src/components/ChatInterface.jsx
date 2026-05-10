@@ -115,6 +115,15 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
     const textareaRef = useRef(null);
     const fileInputRef = useRef(null);
     const modelDropdownRef = useRef(null);
+    const messagesEndRef = useRef(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [chatHistory, isGenerating]);
 
     const handleEnhance = async () => {
         if (!prompt.trim() || isEnhancing) return;
@@ -322,6 +331,8 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                     )}
                                 </motion.div>
                             ))}
+                            {/* Invisible element to anchor auto-scroll */}
+                            <div ref={messagesEndRef} className="h-4" />
                         </div>
                     )}
                 </AnimatePresence>

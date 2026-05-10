@@ -7,9 +7,11 @@ import SettingsModal from './components/SettingsModal';
 import AuthPage from './components/AuthPage';
 import DatasetPage from './components/DatasetPage';
 import BlobVideo from './components/BlobVideo';
+import PlaygroundPage from './playground/PlaygroundPage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download } from 'lucide-react';
-import { fetchChats, fetchChatDetails, generateScene, checkSceneStatus, deleteChat, fetchStitchedVideos, deleteStitchedVideo, googleAuth, wipeUserData, deleteAccount, fetchSuggestions, createSceneFromDataset } from './api/client';
+import Logo from './components/Logo';
+import { fetchProjects, createProject, deleteProject, fetchChats, fetchChatDetails, generateScene, checkSceneStatus, deleteChat, fetchStitchedVideos, deleteStitchedVideo, googleAuth, wipeUserData, deleteAccount, fetchSuggestions, createSceneFromDataset } from './api/client';
 
 function App() {
   if (window.location.pathname === '/dataset') {
@@ -24,8 +26,11 @@ function App() {
   });
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [projects, setProjects] = useState([]);
+  const [activeProjectId, setActiveProjectId] = useState(null);
   const [chats, setChats] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
+  const [activeView, setActiveView] = useState(() => window.location.pathname === '/playground' ? 'playground' : 'chat');
 
   // Chat context state
   const [chatHistory, setChatHistory] = useState([]);
@@ -52,11 +57,23 @@ function App() {
   // Initial load — only when authenticated
   useEffect(() => {
     if (authToken) {
-      loadChats();
-      loadStitchedVideos();
+      loadProjects();
       loadSuggestions();
     }
   }, [authToken]);
+
+  // When active project changes, load its specific data
+  useEffect(() => {
+    if (authToken && activeProjectId) {
+      loadChats(activeProjectId);
+      loadStitchedVideos(activeProjectId);
+      setCurrentChatId(null);
+    } else {
+      setChats([]);
+      setStitchedVideos([]);
+      setCurrentChatId(null);
+    }
+  }, [authToken, activeProjectId]);
 
   // Auth handlers
   const handleGoogleAuth = async (idToken) => {
@@ -77,6 +94,8 @@ function App() {
     localStorage.removeItem('manimatic_profile');
     setAuthToken(null);
     setUserProfile(null);
+    setProjects([]);
+    setActiveProjectId(null);
     setChats([]);
     setChatHistory([]);
     setScenes([]);
@@ -89,12 +108,20 @@ function App() {
   const handleWipeData = async () => {
     try {
       await wipeUserData();
+      setProjects([]);
+      setActiveProjectId(null);
       setChats([]);
       setChatHistory([]);
       setScenes([]);
       setActiveScene(null);
       setCurrentChatId(null);
       setStitchedVideos([]);
+      setActiveView('chat');
+      window.history.pushState({}, '', '/');
+      // Reset playground store
+      import('./playground/store/playgroundStore').then(module => {
+        module.usePlaygroundStore.getState().newProject();
+      });
     } catch (err) {
       console.error('Wipe failed', err);
     }
@@ -109,9 +136,43 @@ function App() {
     }
   };
 
-  const loadChats = async () => {
+  const loadProjects = async () => {
     try {
-      const data = await fetchChats();
+      const data = await fetchProjects();
+      setProjects(data);
+      if (data.length > 0 && !activeProjectId) {
+        setActiveProjectId(data[0].id);
+      }
+    } catch (error) {
+      console.error("Failed to fetch projects", error);
+    }
+  };
+
+  const handleCreateProject = async (title) => {
+    try {
+      const newProject = await createProject(title);
+      setProjects(prev => [newProject, ...prev]);
+      setActiveProjectId(newProject.id);
+    } catch (error) {
+      console.error("Failed to create project", error);
+    }
+  };
+
+  const handleDeleteProject = async (id) => {
+    try {
+      await deleteProject(id);
+      setProjects(prev => prev.filter(p => p.id !== id));
+      if (activeProjectId === id) {
+        setActiveProjectId(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete project", error);
+    }
+  };
+
+  const loadChats = async (projectId) => {
+    try {
+      const data = await fetchChats(projectId);
       setChats(data);
     } catch (error) {
       console.error("Failed to fetch chats", error);
@@ -127,9 +188,9 @@ function App() {
     }
   };
 
-  const loadStitchedVideos = async () => {
+  const loadStitchedVideos = async (projectId) => {
     try {
-      const data = await fetchStitchedVideos();
+      const data = await fetchStitchedVideos(projectId);
       setStitchedVideos(data);
     } catch (error) {
       console.error("Failed to fetch stitched videos", error);
@@ -160,22 +221,16 @@ function App() {
         const imageUrl = scene.reference_image ? `${scene.reference_image?.startsWith('http') ? scene.reference_image : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + scene.reference_image}` : null;
         history.push({ role: 'user', content: scene.prompt, image: imageUrl });
 
-        if (scene.text_response) {
-          history.push({
-            role: 'assistant',
-            content: scene.text_response,
-          });
-        } else {
-          history.push({
-            role: 'assistant',
-            content: 'Generating animation...',
-            sceneId: scene.id || scene._id,
-            status: scene.status,
-            error_message: scene.error_message,
-            video_path: scene.video_path,
-            code: scene.code
-          });
-        }
+        history.push({
+          role: 'assistant',
+          content: 'Generating animation...',
+          text_response: scene.text_response,
+          sceneId: scene.id || scene._id,
+          status: scene.status,
+          error_message: scene.error_message,
+          video_path: scene.video_path,
+          code: scene.code
+        });
       });
       setChatHistory(history);
       setScenes(data.scenes);
@@ -227,7 +282,7 @@ function App() {
     setChatHistory([{ role: 'user', content: suggestion.instruction }]);
 
     try {
-      const response = await createSceneFromDataset(suggestion.id);
+      const response = await createSceneFromDataset(activeProjectId, suggestion.id);
       const newScene = response.scene;
       const newChatId = response.chat_id;
 
@@ -243,6 +298,7 @@ function App() {
         {
           role: 'assistant',
           content: 'Animation ready from Manimatic dataset.',
+          text_response: newScene.text_response,
           sceneId: newScene.id,
           status: 'completed',
           video_path: newScene.video_path,
@@ -250,7 +306,7 @@ function App() {
         },
       ]);
 
-      loadChats();
+      loadChats(activeProjectId);
       loadSuggestions(); // refresh for next new chat
     } catch (err) {
       console.error('Suggestion scene creation failed', err);
@@ -287,6 +343,10 @@ function App() {
         payload.append('chat_id', currentChatId);
       }
 
+      if (activeProjectId) {
+        payload.append('project_id', activeProjectId);
+      }
+
       payload.append('quality', resolution);
       payload.append('target_model', selectedModel);
 
@@ -297,7 +357,7 @@ function App() {
       if (!currentChatId && response.chat_id) {
         newChatId = response.chat_id;
         setCurrentChatId(response.chat_id);
-        loadChats();
+        loadChats(activeProjectId);
       }
 
       const newScene = response.scene;
@@ -332,22 +392,16 @@ function App() {
           const imageUrl = scene.reference_image ? `${scene.reference_image?.startsWith('http') ? scene.reference_image : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + scene.reference_image}` : null;
           history.push({ role: 'user', content: scene.prompt, image: imageUrl });
 
-          if (scene.text_response) {
-            history.push({
-              role: 'assistant',
-              content: scene.text_response,
-            });
-          } else {
-            history.push({
-              role: 'assistant',
-              content: 'Generating animation...',
-              sceneId: scene.id || scene._id,
-              status: scene.status,
-              error_message: scene.error_message,
-              video_path: scene.video_path,
-              code: scene.code
-            });
-          }
+          history.push({
+            role: 'assistant',
+            content: 'Generating animation...',
+            text_response: scene.text_response,
+            sceneId: scene.id || scene._id,
+            status: scene.status,
+            error_message: scene.error_message,
+            video_path: scene.video_path,
+            code: scene.code
+          });
         });
         setChatHistory(history);
         setScenes(data.scenes);
@@ -361,7 +415,7 @@ function App() {
           pollIntervalRef.current = null;
           setIsGenerating(false);
           setIsPreviewOpen(true);
-          loadChats();
+          loadChats(activeProjectId);
         }
       } catch (err) {
         console.error("Polling error", err);
@@ -378,16 +432,32 @@ function App() {
       <Sidebar
         isOpen={isSidebarOpen}
         toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        projects={projects}
+        activeProject={activeProjectId}
+        setActiveProject={setActiveProjectId}
+        onCreateProject={handleCreateProject}
+        onDeleteProject={handleDeleteProject}
         chats={chats}
         currentChat={currentChatId}
+        activeView={activeView}
         setCurrentChat={(id) => {
-          if (id !== currentChatId) {
+          const isSameChat = id === currentChatId;
+          const isDifferentView = activeView !== 'chat';
+          
+          if (!isSameChat || isDifferentView) {
             if (pollIntervalRef.current) {
               clearInterval(pollIntervalRef.current);
               pollIntervalRef.current = null;
               setIsGenerating(false);
             }
-            setCurrentChatId(id);
+            setActiveView('chat');
+            window.history.pushState({}, '', '/');
+            
+            if (isSameChat && isDifferentView) {
+              loadChatDetails(id);
+            } else {
+              setCurrentChatId(id);
+            }
           }
         }}
         startNewChat={() => {
@@ -397,7 +467,18 @@ function App() {
             setIsGenerating(false);
           }
           setCurrentChatId(null);
+          setActiveView('chat');
+          window.history.pushState({}, '', '/');
           loadSuggestions(); // pick fresh random suggestions for the new chat
+        }}
+        onOpenPlayground={() => {
+          if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+            setIsGenerating(false);
+          }
+          setActiveView('playground');
+          window.history.pushState({}, '', '/playground');
         }}
         onDeleteChat={handleDeleteChat}
         onOpenStitcher={() => setIsStitcherOpen(true)}
@@ -415,40 +496,76 @@ function App() {
         onDeleteAccount={handleDeleteAccount}
       />
       <main className="flex-1 flex overflow-hidden">
-        <ChatInterface
-          currentChat={currentChatId}
-          chatHistory={chatHistory}
-          onGenerate={handleGenerate}
-          isGenerating={isGenerating}
-          isSidebarOpen={isSidebarOpen}
-          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          hasCompletedScene={scenes.some(s => s.status === 'completed')}
-          isPreviewOpen={isPreviewOpen}
-          togglePreview={() => setIsPreviewOpen(!isPreviewOpen)}
-          onSceneClick={(sceneId) => {
-            const scene = scenes.find((s) => s.id === sceneId || s._id === sceneId);
-            if (scene) {
+        {activeView === 'playground' ? (
+          <PlaygroundPage
+            resolution={resolution}
+            isSidebarOpen={isSidebarOpen}
+            toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            activeProjectId={activeProjectId}
+            onRendered={(scene, chatId) => {
+              if (chatId) setCurrentChatId(chatId);
+              setScenes(prev => [scene, ...prev.filter(s => s.id !== scene.id)]);
               setActiveScene(scene);
-              setIsPreviewOpen(prev => !prev);
-            }
-          }}
-          selectedModel={selectedModel}
-          onModelChange={(m) => setSelectedModel(m)}
-          suggestions={suggestions}
-          onSuggestionClick={handleSuggestionClick}
-        />
-        <Workspace
-          scenes={scenes}
-          activeScene={activeScene}
-          isSidebarOpen={isSidebarOpen}
-          isPreviewOpen={isPreviewOpen}
-          closePreview={() => setIsPreviewOpen(false)}
-        />
+              loadChats(activeProjectId);
+            }}
+          />
+        ) : projects.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center bg-black px-6 text-center">
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-black border border-[#333333] shadow-lg shadow-white/5">
+              <Logo size={48} />
+            </div>
+            <h2 className="mb-2 text-2xl font-semibold text-white tracking-tight">Welcome to Manimatic</h2>
+            <p className="mb-8 max-w-sm text-sm text-[#a1a1aa] leading-relaxed">
+              To start generating math and physics animations, you'll first need to create a project.
+            </p>
+            <button 
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('open-create-project'));
+              }}
+              className="rounded-lg bg-white px-6 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-[#e5e5e5] shadow-lg shadow-white/10"
+            >
+              Create a Project in the Sidebar
+            </button>
+          </div>
+        ) : (
+          <>
+            <ChatInterface
+              currentChat={currentChatId}
+              chatHistory={chatHistory}
+              onGenerate={handleGenerate}
+              isGenerating={isGenerating}
+              isSidebarOpen={isSidebarOpen}
+              toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+              hasCompletedScene={scenes.some(s => s.status === 'completed' && s.code)}
+              isPreviewOpen={isPreviewOpen}
+              togglePreview={() => setIsPreviewOpen(!isPreviewOpen)}
+              onSceneClick={(sceneId) => {
+                const scene = scenes.find((s) => s.id === sceneId || s._id === sceneId);
+                if (scene) {
+                  setActiveScene(scene);
+                  setIsPreviewOpen(prev => !prev);
+                }
+              }}
+              selectedModel={selectedModel}
+              onModelChange={(m) => setSelectedModel(m)}
+              suggestions={suggestions}
+              onSuggestionClick={handleSuggestionClick}
+            />
+            <Workspace
+              scenes={scenes}
+              activeScene={activeScene}
+              isSidebarOpen={isSidebarOpen}
+              isPreviewOpen={isPreviewOpen}
+              closePreview={() => setIsPreviewOpen(false)}
+            />
+          </>
+        )}
       </main>
 
       <StitcherModal
         isOpen={isStitcherOpen}
         onClose={() => setIsStitcherOpen(false)}
+        activeProjectId={activeProjectId}
         onStitchComplete={(newStitch) => {
           if (newStitch) {
             // Instantly show the new stitched video as pending in the sidebar
@@ -456,7 +573,7 @@ function App() {
           }
           const pollStitch = setInterval(async () => {
             try {
-              const data = await fetchStitchedVideos();
+              const data = await fetchStitchedVideos(activeProjectId);
               setStitchedVideos(data);
               const processing = data.filter(sv => sv.status === 'pending' || sv.status === 'processing');
               if (processing.length === 0) {

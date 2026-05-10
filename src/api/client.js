@@ -19,6 +19,20 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Global response interceptor to handle invalid/expired tokens (401 Unauthorized)
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            console.warn('Unauthorized access. Token might be invalid or expired. Signing out...');
+            localStorage.removeItem('manimatic_token');
+            localStorage.removeItem('manimatic_profile');
+            window.location.href = '/'; // Redirect and force state refresh
+        }
+        return Promise.reject(error);
+    }
+);
+
 // ── Auth API ──────────────────────────────────────────────
 
 export const googleAuth = async (idToken) => {
@@ -52,6 +66,23 @@ export const updateTrainingConsent = async (consented) => {
 };
 
 
+// ── Project API ──────────────────────────────────────────
+
+export const fetchProjects = async () => {
+    const response = await api.get('projects/');
+    return response.data;
+};
+
+export const createProject = async (title) => {
+    const response = await api.post('projects/', { title });
+    return response.data;
+};
+
+export const deleteProject = async (id) => {
+    const response = await api.delete(`projects/${id}/`);
+    return response.data;
+};
+
 // ── Scene API ─────────────────────────────────────────────
 
 export const generateScene = async (data) => {
@@ -68,8 +99,8 @@ export const checkSceneStatus = async (sceneId) => {
 
 // ── Chat API ──────────────────────────────────────────────
 
-export const fetchChats = async () => {
-    const response = await api.get('chats/');
+export const fetchChats = async (projectId) => {
+    const response = await api.get(`chats/?project_id=${projectId}`);
     return response.data;
 };
 
@@ -85,13 +116,13 @@ export const deleteChat = async (chatId) => {
 
 // ── Stitcher API ──────────────────────────────────────────
 
-export const createStitch = async (videoPaths, title, transition = 'cut') => {
-    const response = await api.post('stitch/', { video_paths: videoPaths, title, transition });
+export const createStitch = async (projectId, videoPaths, title, transition = 'cut') => {
+    const response = await api.post('stitch/', { project_id: projectId, video_paths: videoPaths, title, transition });
     return response.data;
 };
 
-export const fetchStitchedVideos = async () => {
-    const response = await api.get('stitched/');
+export const fetchStitchedVideos = async (projectId) => {
+    const response = await api.get(`stitched/?project_id=${projectId}`);
     return response.data;
 };
 
@@ -112,8 +143,8 @@ export const fetchSuggestions = async (count = 4) => {
     return response.data; // [{ id, instruction, category, complexity, video_path }]
 };
 
-export const createSceneFromDataset = async (datasetId) => {
-    const response = await api.post('scenes/from-dataset/', { dataset_id: datasetId });
+export const createSceneFromDataset = async (projectId, datasetId) => {
+    const response = await api.post('scenes/from-dataset/', { project_id: projectId, dataset_id: datasetId });
     return response.data; // { scene, chat_id } — same shape as generateScene
 };
 
@@ -123,3 +154,5 @@ export const enhancePrompt = async (rawPrompt) => {
     const response = await api.post('enhance-prompt/', { prompt: rawPrompt });
     return response.data; // { enhanced_prompt: "..." }
 };
+
+export default api;
