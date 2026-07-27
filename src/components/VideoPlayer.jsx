@@ -14,7 +14,7 @@ const VideoPlayer = ({ mainVideoUrl, minimal = false }) => {
         const fullUrl = mainVideoUrl.startsWith('http')
             ? mainVideoUrl
             : mainVideoUrl.startsWith('/dataset-videos/')
-                ? mainVideoUrl  // served by Vite static server at frontend origin
+                ? `https://zgovfehpokusvxyxwvhl.supabase.co/storage/v1/object/public${mainVideoUrl}`
                 : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + mainVideoUrl;
 
         // Fetch the video as a blob to inject the ngrok bypass header

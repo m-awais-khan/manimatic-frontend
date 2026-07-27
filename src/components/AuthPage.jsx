@@ -244,7 +244,7 @@ function PromptToVideoShowcase() {
                                 {phase.key === 'video' && (
                                     <video
                                         key="complete-video"
-                                        src="/dataset-videos/0016-bubblesortanimation.mp4"
+                                        src="https://zgovfehpokusvxyxwvhl.supabase.co/storage/v1/object/public/dataset-videos/0016-bubblesortanimation.mp4"
                                         autoPlay
                                         muted
                                         loop

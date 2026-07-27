@@ -262,7 +262,7 @@ function DatasetPage() {
                                             {selectedExample?.video_exists && selectedExample?.video_path ? (
                                                 <video
                                                     key={selectedExample.video_path}
-                                                    src={selectedExample.video_path}
+                                                    src={selectedExample.video_path.startsWith('/dataset-videos/') ? `https://zgovfehpokusvxyxwvhl.supabase.co/storage/v1/object/public${selectedExample.video_path}` : selectedExample.video_path}
                                                     autoPlay
                                                     muted
                                                     controls
