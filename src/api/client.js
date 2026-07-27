@@ -8,14 +8,12 @@ const api = axios.create({
     baseURL: baseURL,
 });
 
-// Inject auth token and ngrok bypass into every request
+// Inject auth token into every request
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('manimatic_token');
     if (token) {
         config.headers.Authorization = `Token ${token}`;
     }
-    // Bypass Ngrok's free tier warning page for GET requests
-    config.headers['ngrok-skip-browser-warning'] = '69420';
     return config;
 });
 
@@ -116,8 +114,14 @@ export const deleteChat = async (chatId) => {
 
 // ── Stitcher API ──────────────────────────────────────────
 
-export const createStitch = async (projectId, videoPaths, title, transition = 'cut') => {
-    const response = await api.post('stitch/', { project_id: projectId, video_paths: videoPaths, title, transition });
+export const createStitch = async (projectId, videoPaths, title, transition = 'cut', editPlan = null) => {
+    const payload = { project_id: projectId, video_paths: videoPaths, title, transition };
+    if (editPlan) {
+        payload.clips = editPlan.clips;
+        payload.transitions = editPlan.transitions;
+        payload.output = editPlan.output;
+    }
+    const response = await api.post('stitch/', payload);
     return response.data;
 };
 
@@ -133,6 +137,28 @@ export const fetchStitchedVideoDetail = async (id) => {
 
 export const deleteStitchedVideo = async (id) => {
     const response = await api.delete(`stitched/${id}/`);
+    return response.data;
+};
+
+// ── Video Editor Projects API ─────────────────────────────
+
+export const fetchVideoEditorProjects = async (projectId) => {
+    const response = await api.get(`video-editor/projects/?project_id=${projectId}`);
+    return response.data;
+};
+
+export const createVideoEditorProject = async (projectId, title, editData) => {
+    const response = await api.post('video-editor/projects/', { project_id: projectId, title, edit_data: editData });
+    return response.data;
+};
+
+export const updateVideoEditorProject = async (id, title, editData) => {
+    const response = await api.put(`video-editor/projects/${id}/`, { title, edit_data: editData });
+    return response.data;
+};
+
+export const deleteVideoEditorProject = async (id) => {
+    const response = await api.delete(`video-editor/projects/${id}/`);
     return response.data;
 };
 
