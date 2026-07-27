@@ -28,6 +28,9 @@ function PlaygroundPage({ resolution = '720p', onRendered, isSidebarOpen = true,
   const [renderedScene, setRenderedScene] = useState(null);
   const [showPanels, setShowPanels] = useState(true);
   const [showRenderOutput, setShowRenderOutput] = useState(true);
+  const [nameModalOpen, setNameModalOpen] = useState(false);
+  const [nameModalAction, setNameModalAction] = useState(null);
+  const [tempName, setTempName] = useState("My Playground");
   const pollRef = useRef(null);
 
   const loadProjects = async () => {
@@ -45,15 +48,16 @@ function PlaygroundPage({ resolution = '720p', onRendered, isSidebarOpen = true,
     return () => pollRef.current && clearInterval(pollRef.current);
   }, [activeProjectId]);
 
-  const saveProject = async () => {
+  const saveProject = async (overrideTitle) => {
     if (!activeProjectId) return;
 
-    let currentTitle = title;
+    const isStringOverride = typeof overrideTitle === 'string';
+    let currentTitle = isStringOverride ? overrideTitle : title;
     if (!projectId && currentTitle === 'Untitled Playground') {
-      const newName = window.prompt("Enter a name for this Playground:", "My Playground");
-      if (newName === null) return; // User cancelled
-      currentTitle = newName.trim() || 'Untitled Playground';
-      setTitle(currentTitle);
+      setTempName("My Playground");
+      setNameModalAction('save');
+      setNameModalOpen(true);
+      return;
     }
 
     setSaving(true);
@@ -67,15 +71,16 @@ function PlaygroundPage({ resolution = '720p', onRendered, isSidebarOpen = true,
     }
   };
 
-  const render = async () => {
+  const render = async (overrideTitle) => {
     if (!activeProjectId) return;
 
-    let currentTitle = title;
+    const isStringOverride = typeof overrideTitle === 'string';
+    let currentTitle = isStringOverride ? overrideTitle : title;
     if (!projectId && currentTitle === 'Untitled Playground') {
-      const newName = window.prompt("Enter a name for this Playground:", "My Playground");
-      if (newName === null) return; // User cancelled
-      currentTitle = newName.trim() || 'Untitled Playground';
-      setTitle(currentTitle);
+      setTempName("My Playground");
+      setNameModalAction('render');
+      setNameModalOpen(true);
+      return;
     }
 
     setRendering(true);
@@ -110,6 +115,17 @@ function PlaygroundPage({ resolution = '720p', onRendered, isSidebarOpen = true,
   const deleteProject = async (id) => {
     await deletePlaygroundProject(id);
     await loadProjects();
+  };
+
+  const handleNameModalSubmit = () => {
+    const finalName = tempName.trim() || 'Untitled Playground';
+    setTitle(finalName);
+    setNameModalOpen(false);
+    if (nameModalAction === 'save') {
+      saveProject(finalName);
+    } else if (nameModalAction === 'render') {
+      render(finalName);
+    }
   };
 
   return (
@@ -200,6 +216,40 @@ function PlaygroundPage({ resolution = '720p', onRendered, isSidebarOpen = true,
             )}
           </div>
         </aside>
+      )}
+
+      {nameModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-[#333333] bg-[#0a0a0a] p-6 shadow-2xl">
+            <h3 className="mb-4 text-lg font-semibold text-white">Name Your Playground</h3>
+            <p className="mb-4 text-sm text-[#a1a1aa]">Enter a name for this Playground before continuing.</p>
+            <input
+              type="text"
+              value={tempName}
+              onChange={(e) => setTempName(e.target.value)}
+              className="mb-6 w-full rounded-lg border border-[#333333] bg-[#111111] px-4 py-2 text-white outline-none focus:border-white/50"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleNameModalSubmit();
+                if (e.key === 'Escape') setNameModalOpen(false);
+              }}
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setNameModalOpen(false)}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-[#a1a1aa] hover:bg-[#111111] hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleNameModalSubmit}
+                className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-200 transition-colors"
+              >
+                Save & Continue
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

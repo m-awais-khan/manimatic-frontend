@@ -227,6 +227,7 @@ function App() {
           text_response: scene.text_response,
           sceneId: scene.id || scene._id,
           status: scene.status,
+          target_model: scene.target_model,
           error_message: scene.error_message,
           video_path: scene.video_path,
           code: scene.code
@@ -361,12 +362,16 @@ function App() {
       }
 
       const newScene = response.scene;
+      const isModal32B = selectedModel === 'manimatic-qwen32b-modal';
 
       setChatHistory(prev => [...prev, {
         role: 'assistant',
-        content: 'Generating animation...',
+        content: isModal32B
+          ? 'Starting Manimatic 32B on Modal. First request may take a few minutes...'
+          : 'Generating animation...',
         sceneId: newScene.id,
-        status: newScene.status
+        status: newScene.status,
+        target_model: newScene.target_model || selectedModel
       }]);
       setActiveScene(newScene);
       startPolling(newChatId);
@@ -398,6 +403,7 @@ function App() {
             text_response: scene.text_response,
             sceneId: scene.id || scene._id,
             status: scene.status,
+            target_model: scene.target_model,
             error_message: scene.error_message,
             video_path: scene.video_path,
             code: scene.code
@@ -566,15 +572,21 @@ function App() {
         isOpen={isStitcherOpen}
         onClose={() => setIsStitcherOpen(false)}
         activeProjectId={activeProjectId}
-        onStitchComplete={(newStitch) => {
+        projects={projects}
+        onStitchComplete={(newStitch, editorProjectId) => {
           if (newStitch) {
             // Instantly show the new stitched video as pending in the sidebar
-            setStitchedVideos(prev => [newStitch, ...prev]);
+            if (!editorProjectId || editorProjectId === activeProjectId) {
+              setStitchedVideos(prev => [newStitch, ...prev]);
+            }
           }
+          const pollProjectId = editorProjectId || activeProjectId;
           const pollStitch = setInterval(async () => {
             try {
-              const data = await fetchStitchedVideos(activeProjectId);
-              setStitchedVideos(data);
+              const data = await fetchStitchedVideos(pollProjectId);
+              if (pollProjectId === activeProjectId) {
+                setStitchedVideos(data);
+              }
               const processing = data.filter(sv => sv.status === 'pending' || sv.status === 'processing');
               if (processing.length === 0) {
                 clearInterval(pollStitch);

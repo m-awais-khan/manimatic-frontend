@@ -13,6 +13,7 @@ function DatasetPage() {
     const [loadError, setLoadError] = React.useState('');
     const [category, setCategory] = React.useState('All');
     const [complexity, setComplexity] = React.useState('All');
+    const [exampleType, setExampleType] = React.useState('All');
     const [selectedId, setSelectedId] = React.useState('');
     const [query, setQuery] = React.useState('');
 
@@ -47,10 +48,14 @@ function DatasetPage() {
         return examples.filter((example) => {
             const matchesCategory = category === 'All' || example.category === category;
             const matchesComplexity = complexity === 'All' || example.complexity === complexity;
+            const matchesType = exampleType === 'All'
+                || (exampleType === 'Classic' && !example.is_ambiguous && !example.is_irrelevent)
+                || (exampleType === 'Ambiguous' && example.is_ambiguous && !example.is_irrelevent)
+                || (exampleType === 'Irrelevent' && example.is_irrelevent);
             const matchesSearch = !search || `${example.instruction} ${example.scene_class}`.toLowerCase().includes(search);
-            return matchesCategory && matchesComplexity && matchesSearch;
+            return matchesCategory && matchesComplexity && matchesType && matchesSearch;
         });
-    }, [category, complexity, examples, query]);
+    }, [category, complexity, exampleType, examples, query]);
 
     React.useEffect(() => {
         if (!filteredExamples.length) {
@@ -65,12 +70,13 @@ function DatasetPage() {
     const selectedExample = filteredExamples.find((example) => example.id === selectedId) || filteredExamples[0];
     const categoryCount = category === 'All' ? examples.length : dataset?.stats?.categories?.[category] || 0;
     const complexityCount = complexity === 'All' ? examples.length : dataset?.stats?.complexities?.[complexity] || 0;
-    const selectedPairCount = category === 'All'
-        ? complexityCount
-        : complexity === 'All'
-            ? categoryCount
-            : dataset?.stats?.category_complexities?.[category]?.[complexity] || 0;
-
+    const typeCount = exampleType === 'All'
+        ? examples.length
+        : exampleType === 'Classic'
+            ? dataset?.stats?.flags?.classic || 0
+            : exampleType === 'Ambiguous'
+                ? dataset?.stats?.flags?.ambiguous || 0
+                : dataset?.stats?.flags?.irrelevent || 0;
     return (
         <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
             <header className="sticky top-0 z-40 border-b border-[#333333] bg-black">
@@ -107,12 +113,13 @@ function DatasetPage() {
                         </p>
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-4">
                         {[
                             ['Total examples', dataset?.stats?.total || 0],
                             // ['Mapped videos', dataset?.stats?.with_video || 0],
                             ['Category count', categoryCount],
-                            ['Current filter', selectedPairCount],
+                            ['Type count', typeCount],
+                            ['Current filter', filteredExamples.length],
                         ].map(([label, value]) => (
                             <div key={label} className="rounded-2xl border border-[#333333] bg-[#0a0a0a] p-5">
                                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#71717a]">{label}</p>
@@ -129,7 +136,7 @@ function DatasetPage() {
                         <div className="p-8 font-mono text-sm text-[#a1a1aa]">Loading dataset...</div>
                     ) : (
                         <>
-                            <div className="grid gap-4 border-b border-[#333333] p-5 xl:grid-cols-[1fr_1fr_1.4fr]">
+                            <div className="grid gap-4 border-b border-[#333333] p-5 xl:grid-cols-[1fr_1fr_1fr_1.4fr]">
                                 <label className="block">
                                     <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.16em] text-[#71717a]">Category</span>
                                     <select
@@ -151,6 +158,18 @@ function DatasetPage() {
                                     >
                                         {complexities.map((item) => (
                                             <option key={item} value={item}>{item === 'All' ? 'All levels' : item}</option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <label className="block">
+                                    <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.16em] text-[#71717a]">Type</span>
+                                    <select
+                                        value={exampleType}
+                                        onChange={(event) => setExampleType(event.target.value)}
+                                        className="h-11 w-full rounded-xl border border-[#333333] bg-black px-4 text-sm font-semibold text-white outline-none"
+                                    >
+                                        {['All', 'Classic', 'Ambiguous', 'Irrelevent'].map((item) => (
+                                            <option key={item} value={item}>{item === 'All' ? 'All types' : item}</option>
                                         ))}
                                     </select>
                                 </label>
@@ -191,6 +210,21 @@ function DatasetPage() {
                                                 <p className={`mt-3 text-[11px] ${example.id === selectedExample?.id ? 'text-black' : 'text-[#71717a]'}`}>
                                                     {example.complexity} / {example.scene_class || 'Scene'}
                                                 </p>
+                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                    {example.is_irrelevent ? (
+                                                        <span className={`rounded-full border px-2 py-1 text-[10px] font-bold ${example.id === selectedExample?.id ? 'border-black text-black' : 'border-[#333333] text-[#d4d4d8]'}`}>
+                                                            Irrelevent
+                                                        </span>
+                                                    ) : example.is_ambiguous ? (
+                                                        <span className={`rounded-full border px-2 py-1 text-[10px] font-bold ${example.id === selectedExample?.id ? 'border-black text-black' : 'border-[#333333] text-[#d4d4d8]'}`}>
+                                                            Ambiguous
+                                                        </span>
+                                                    ) : (
+                                                        <span className={`rounded-full border px-2 py-1 text-[10px] font-bold ${example.id === selectedExample?.id ? 'border-black text-black' : 'border-[#333333] text-[#d4d4d8]'}`}>
+                                                            Classic
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </button>
                                         ))}
                                     </div>
@@ -207,7 +241,12 @@ function DatasetPage() {
                                                 {selectedExample?.instruction || 'No example selected.'}
                                             </p>
                                             <div className="mt-5 flex flex-wrap gap-2">
-                                                {[selectedExample?.category, selectedExample?.complexity, selectedExample?.scene_class].filter(Boolean).map((item) => (
+                                                {[
+                                                    selectedExample?.category,
+                                                    selectedExample?.complexity,
+                                                    selectedExample?.is_irrelevent ? 'Irrelevent' : selectedExample?.is_ambiguous ? 'Ambiguous' : 'Classic',
+                                                    selectedExample?.scene_class,
+                                                ].filter(Boolean).map((item) => (
                                                     <span key={item} className="rounded-full border border-[#333333] bg-[#111111] px-3 py-1 text-[11px] font-bold text-[#d4d4d8]">
                                                         {item === selectedExample?.category ? compactCategory(item) : item}
                                                     </span>
@@ -232,7 +271,7 @@ function DatasetPage() {
                                                 />
                                             ) : (
                                                 <div className="grid aspect-video place-items-center rounded-xl border border-[#333333] bg-[#050505] p-8 text-center text-sm leading-6 text-[#a1a1aa]">
-                                                    No matched video found yet.
+                                                    {selectedExample?.is_irrelevent ? 'Non-animation examples do not have rendered videos.' : 'No matched video found yet.'}
                                                 </div>
                                             )}
                                         </div>
@@ -258,7 +297,9 @@ function DatasetPage() {
                                             }}
                                             lineNumberStyle={{ color: '#52525b', minWidth: '3em' }}
                                         >
-                                            {selectedExample?.output || '# Select an example to inspect the Manim code.'}
+                                            {selectedExample?.is_irrelevent
+                                                ? `# Non-animation response\n${selectedExample?.chat_response || 'No chat response stored.'}`
+                                                : selectedExample?.output || '# Select an example to inspect the Manim code.'}
                                         </SyntaxHighlighter>
                                     </section>
                                 </div>

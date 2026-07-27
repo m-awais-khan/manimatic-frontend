@@ -4,6 +4,7 @@ const number = (key, label, min, max, step = 0.1) => ({ key, label, type: 'numbe
 const text = (key, label, multiline = false) => ({ key, label, type: multiline ? 'textarea' : 'text' });
 const color = (key = 'params.color') => ({ key, label: 'Color', type: 'color', options: COLORS });
 const select = (key, label, options) => ({ key, label, type: 'select', options });
+const nodesMultiSelect = (key, label) => ({ key, label, type: 'nodes_multi_select' });
 
 export const COMMON_ANIMATION = [
   select('params.intro_animation', 'Intro Anim', ANIMATION_TYPES),
@@ -30,6 +31,6 @@ export const PARAM_SCHEMAS = {
   NumberPlane: [text('params.x_range', 'X Range'), text('params.y_range', 'Y Range'), number('params.x_length', 'X Length', 2, 12, 0.5), number('params.y_length', 'Y Length', 2, 8, 0.5), ...COMMON_POSITION],
   CodeBlock: [text('params.verbatim_code', 'Python', true), ...COMMON_ANIMATION],
   Wait: [number('params.duration', 'Seconds', 0, 10, 0.1)],
-  VGroup: [text('params.member_ids', 'Members'), { key: 'params.direction', label: 'Direction', type: 'select', options: ['UP', 'DOWN', 'LEFT', 'RIGHT'] }, number('params.buff', 'Buffer', 0, 3, 0.1), ...COMMON_POSITION],
+  VGroup: [nodesMultiSelect('params.member_ids', 'Members'), { key: 'params.direction', label: 'Direction', type: 'select', options: ['UP', 'DOWN', 'LEFT', 'RIGHT'] }, number('params.buff', 'Buffer', 0, 3, 0.1), ...COMMON_POSITION],
   SubScene: [text('params.scene_class', 'Scene Class')],
 };

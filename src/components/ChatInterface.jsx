@@ -151,10 +151,24 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
     const MODELS = [
         { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'Google' },
         { id: 'groq-llama-3.3-70b-versatile', label: 'Llama 3.3 70B', provider: 'Groq (Fast)' },
-        { id: 'custom-manim-model', label: 'Custom Manim Model', provider: 'Manimatic' },
+        { 
+            id: 'custom-manim-model', 
+            label: 'Custom Manim Model', 
+            provider: 'Manimatic',
+            disabled: true,
+            note: 'Due to limited resources these features are unavailable for now.'
+        },
+        {
+            id: 'manimatic-qwen32b-modal',
+            label: 'Manimatic 32B',
+            provider: 'Modal A100',
+            disabled: true,
+            note: 'Due to limited resources these features are unavailable for now.'
+        },
     ];
 
     const currentModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
+    const isModal32BSelected = currentModel.id === 'manimatic-qwen32b-modal';
 
     const adjustTextareaHeight = () => {
         const textarea = textareaRef.current;
@@ -369,19 +383,41 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                                             <button
                                                 type="button"
                                                 key={model.id}
+                                                disabled={model.disabled}
                                                 onClick={() => {
+                                                    if (model.disabled) return;
                                                     onModelChange && onModelChange(model.id);
                                                     setIsModelDropdownOpen(false);
                                                 }}
-                                                className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors ${selectedModel === model.id
-                                                    ? 'bg-white text-black'
-                                                    : 'text-[#a1a1aa] hover:bg-[#27272a]/70 hover:text-white'
-                                                    }`}
+                                                className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors ${
+                                                    model.disabled
+                                                        ? 'opacity-50 cursor-not-allowed bg-transparent'
+                                                        : selectedModel === model.id
+                                                            ? 'bg-white text-black'
+                                                            : 'text-[#a1a1aa] hover:bg-[#27272a]/70 hover:text-white'
+                                                }`}
                                             >
-                                                <div className={`w-2 h-2 rounded-full shrink-0 ${selectedModel === model.id ? 'bg-black' : 'bg-slate-600'}`} />
+                                                <div className={`w-2 h-2 rounded-full shrink-0 ${
+                                                    model.disabled 
+                                                        ? 'bg-[#3f3f46]' 
+                                                        : selectedModel === model.id ? 'bg-black' : 'bg-slate-600'
+                                                }`} />
                                                 <div>
-                                                    <div className="font-medium">{model.label}</div>
-                                                    <div className={`text-xs ${selectedModel === model.id ? 'text-black/70' : 'text-[#71717a]'}`}>{model.provider}</div>
+                                                    <div className={`font-medium ${model.disabled ? 'text-[#71717a]' : ''}`}>{model.label}</div>
+                                                    <div className={`text-xs ${
+                                                        model.disabled 
+                                                            ? 'text-[#52525b]' 
+                                                            : selectedModel === model.id ? 'text-black/70' : 'text-[#71717a]'
+                                                    }`}>{model.provider}</div>
+                                                    {model.note && (
+                                                        <div className={`text-[10px] leading-snug mt-0.5 ${
+                                                            model.disabled 
+                                                                ? 'text-[#52525b]' 
+                                                                : selectedModel === model.id ? 'text-black/60' : 'text-[#71717a]'
+                                                        }`}>
+                                                            {model.note}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </button>
                                         ))}
@@ -505,6 +541,11 @@ function ChatInterface({ currentChat, chatHistory, onGenerate, isGenerating, isS
                             </button>
                         </div>
                     </form>
+                    {isModal32BSelected && (
+                        <p className="mt-2 px-1 text-xs text-[#a1a1aa] leading-relaxed">
+                            Manimatic 32B runs on Modal A100. First request can take 2-5 minutes while the model wakes up.
+                        </p>
+                    )}
                     {isNewChat && (
                         <p className="text-center text-xs text-[#71717a] mt-4">
                             Manimatic can make mistakes. Verify important animations.

@@ -21,7 +21,7 @@ export function buildManifest(graph) {
   const edges = graph.edges || [];
   const warnings = validateGraph(nodes, edges);
 
-  const mobjects = nodes
+  let mobjects = nodes
     .filter((node) => isMobject(node.type))
     .sort((a, b) => a.x - b.x || a.y - b.y)
     .map((node) => {
@@ -38,6 +38,31 @@ export function buildManifest(graph) {
         alignment: node.alignment || null,
       };
     });
+
+  const mobjectMap = new Map(mobjects.map(m => [m.id, m]));
+  const sortedMobjects = [];
+  const visitedMobjects = new Set();
+
+  const visitMobj = (mobj, visiting = new Set()) => {
+    if (!mobj || visitedMobjects.has(mobj.id)) return;
+    if (visiting.has(mobj.id)) return; // Prevent infinite loops
+    visiting.add(mobj.id);
+    
+    if (mobj.type === 'VGroup' && mobj.params.member_ids) {
+      for (const memberId of mobj.params.member_ids) {
+        visitMobj(mobjectMap.get(memberId), visiting);
+      }
+    }
+    
+    visiting.delete(mobj.id);
+    visitedMobjects.add(mobj.id);
+    sortedMobjects.push(mobj);
+  };
+
+  for (const mobj of mobjects) {
+    visitMobj(mobj);
+  }
+  mobjects = sortedMobjects;
 
   let step = 1;
   const timeline = [];

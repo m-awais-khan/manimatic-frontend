@@ -32,6 +32,14 @@ const ProcessingBlock = ({ msg, model, onSceneClick, isPreviewOpen }) => {
     // Deriving logs from manifest history ensures they are persistent and 'stateless'
     const derivedLogs = useMemo(() => {
         const list = [{ text: 'Initializing engine...', type: 'info', id: 'init' }];
+        const isModal32B = msg.target_model === 'manimatic-qwen32b-modal';
+        if (isModal32B && msg.status !== 'completed' && msg.status !== 'error') {
+            list.push({
+                text: 'Manimatic 32B is hosted on Modal A100. Cold starts can take 2-5 minutes.',
+                type: 'warning',
+                id: 'modal-cold-start'
+            });
+        }
         if (msg.status === 'pending') return list;
 
         list.push({ text: `Generating Manim code with ${model}...`, type: 'info', id: 'gen-init' });
@@ -74,7 +82,7 @@ const ProcessingBlock = ({ msg, model, onSceneClick, isPreviewOpen }) => {
         }
 
         return list;
-    }, [msg.status, msg.manifest, msg.code, msg.error_message, model]);
+    }, [msg.status, msg.manifest, msg.code, msg.error_message, msg.target_model, model]);
 
     useEffect(() => {
         const isChatOnly = msg.status === 'completed' && !msg.code && !msg.video_path;
@@ -180,8 +188,15 @@ const ProcessingBlock = ({ msg, model, onSceneClick, isPreviewOpen }) => {
                             <div className="w-full h-full relative flex flex-col items-center justify-center">
                                 <Code2 size={32} className="text-[#444444] mb-4 animate-pulse" />
                                 <div className="text-sm font-medium text-[#71717a] tracking-widest uppercase font-mono">
-                                    {msg.status === 'generating_code' ? 'Writing Code...' : 'Pending...'}
+                                    {msg.target_model === 'manimatic-qwen32b-modal' && msg.status === 'generating_code'
+                                        ? 'Waking 32B Model...'
+                                        : msg.status === 'generating_code' ? 'Writing Code...' : 'Pending...'}
                                 </div>
+                                {msg.target_model === 'manimatic-qwen32b-modal' && msg.status === 'generating_code' && (
+                                    <div className="mt-3 max-w-[240px] text-center text-[11px] leading-relaxed text-[#a1a1aa]">
+                                        First request may pause while Modal loads the A100 container and model weights.
+                                    </div>
+                                )}
                                 {isRepairing && (
                                     <div className="mt-4 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center gap-2 animate-bounce shadow-[0_0_10px_rgba(245,158,11,0.2)]">
                                         <AlertTriangle size={12} className="text-amber-500" />

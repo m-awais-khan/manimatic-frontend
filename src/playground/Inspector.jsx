@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, SlidersHorizontal } from 'lucide-react';
+import { AlertTriangle, SlidersHorizontal, X } from 'lucide-react';
 import { PARAM_SCHEMAS } from './registry/paramSchemas';
 import { NODE_REGISTRY } from './registry/manimRegistry';
 import { usePlaygroundStore } from './store/playgroundStore';
@@ -62,6 +62,57 @@ function Field({ field, node, onChange }) {
   }
   if (field.type === 'textarea') {
     return <textarea className={`${base} min-h-28 font-mono text-xs`} value={value} onChange={(e) => onChange(field.key, e.target.value)} />;
+  }
+  if (field.type === 'nodes_multi_select') {
+    const allNodes = usePlaygroundStore((s) => s.nodes);
+    const currentMembers = Array.isArray(value) ? value : (typeof value === 'string' ? value.split(',').map(s => s.trim()).filter(Boolean) : []);
+    
+    // Only Mobjects and VGroups can be added.
+    const isMobjectNode = (type) => NODE_REGISTRY[type]?.category === 'Mobjects' || type === 'VGroup';
+    const availableNodes = allNodes.filter(n => n.id !== node.id && !currentMembers.includes(n.id) && isMobjectNode(n.type));
+
+    const handleRemove = (idToRemove) => {
+      const newMembers = currentMembers.filter(id => id !== idToRemove);
+      onChange(field.key, newMembers.join(', '));
+    };
+
+    const handleAdd = (idToAdd) => {
+      if (!idToAdd) return;
+      const newMembers = [...currentMembers, idToAdd];
+      onChange(field.key, newMembers.join(', '));
+    };
+
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap gap-1">
+          {currentMembers.map(memberId => (
+            <div key={memberId} className="flex items-center gap-1 rounded bg-[#111111] px-2 py-1 text-xs text-white border border-[#333333]">
+              <span>{memberId}</span>
+              <button 
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRemove(memberId); }}
+                className="hover:text-rose-400 text-[#71717a] ml-1"
+                title="Remove member"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+          {currentMembers.length === 0 && <span className="text-xs text-[#71717a] italic">No members selected</span>}
+        </div>
+        {availableNodes.length > 0 && (
+          <select 
+            className={`${base} text-xs py-1.5`} 
+            value="" 
+            onChange={(e) => handleAdd(e.target.value)}
+          >
+            <option value="" disabled>+ Add member...</option>
+            {availableNodes.map(n => (
+              <option key={n.id} value={n.id}>{n.id} ({n.type})</option>
+            ))}
+          </select>
+        )}
+      </div>
+    );
   }
   return (
     <input
