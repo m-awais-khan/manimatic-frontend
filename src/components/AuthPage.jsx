@@ -275,6 +275,7 @@ function AuthPage({ onAuthSuccess }) {
                     onAuthSuccess(response.credential);
                 }
             },
+            itp_support: true
         });
 
         google.accounts.id.renderButton(googleButtonRef.current, {
