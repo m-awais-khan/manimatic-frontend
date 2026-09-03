@@ -264,37 +264,50 @@ function PromptToVideoShowcase() {
 function AuthPage({ onAuthSuccess }) {
     const googleButtonRef = React.useRef(null);
 
+    const isInitializedRef = React.useRef(false);
+
     const initializeGoogle = React.useCallback(() => {
         /* global google */
-        if (!window.google || !googleButtonRef.current) return;
+        if (!window.google || !googleButtonRef.current || isInitializedRef.current) return;
 
-        google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: async (response) => {
-                if (response.credential) {
-                    onAuthSuccess(response.credential);
-                }
-            },
-            itp_support: true
-        });
+        try {
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: async (response) => {
+                    if (response.credential) {
+                        onAuthSuccess(response.credential);
+                    }
+                },
+                itp_support: true
+            });
 
-        google.accounts.id.renderButton(googleButtonRef.current, {
-            type: 'standard',
-            theme: 'filled_black',
-            size: 'large',
-            text: 'signin_with',
-            shape: 'pill',
-            width: 300,
-        });
+            google.accounts.id.renderButton(googleButtonRef.current, {
+                type: 'standard',
+                theme: 'filled_black',
+                size: 'large',
+                text: 'signin_with',
+                shape: 'pill',
+                width: 300,
+            });
+            
+            isInitializedRef.current = true;
+        } catch (error) {
+            console.error("Error initializing Google Sign-In:", error);
+        }
     }, [onAuthSuccess]);
 
     React.useEffect(() => {
         const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
 
         if (existingScript) {
-            existingScript.addEventListener('load', initializeGoogle);
-            initializeGoogle();
-            return () => existingScript.removeEventListener('load', initializeGoogle);
+            if (window.google) {
+                initializeGoogle();
+            } else {
+                existingScript.addEventListener('load', initializeGoogle);
+            }
+            return () => {
+                existingScript.removeEventListener('load', initializeGoogle);
+            };
         }
 
         const script = document.createElement('script');
@@ -305,8 +318,8 @@ function AuthPage({ onAuthSuccess }) {
         document.body.appendChild(script);
 
         return () => {
-            const activeScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
-            if (activeScript) activeScript.remove();
+            // We usually shouldn't remove the script on unmount as it causes issues when navigating back
+            // Instead, we just let it be, and the next mount will use the existing script.
         };
     }, [initializeGoogle]);
 
